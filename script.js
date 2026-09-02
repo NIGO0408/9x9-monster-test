@@ -26,7 +26,7 @@ const BGM_LIST = {
    trainingMonster: "audio/training_monster.mp3",
   world: "audio/world.mp3",
   forest: "audio/forest.mp3",
-  forestBattle: "audio/forest_battle.mp3",
+  forestBattle: "audio/forest.mp3",
   forestBoss: "audio/forest_boss.mp3",
   lake: "audio/lake.mp3",
   lakeBattle: "audio/lake_battle.mp3",
@@ -497,7 +497,7 @@ function getAdventureQuestion(stageId = currentAdventureStage) {
 }
 
 function isForestCleared() {
-  return forestProgress >= 5;
+  return forestProgress >= 6;
 }
 
 function isLakeUnlocked() {
@@ -842,7 +842,7 @@ function loadGame() {
       Math.max(
         0,
         Math.min(
-          5,
+          6,
           forestProgress
         )
       );
@@ -3228,7 +3228,7 @@ function updateLakeAreaAvailability() {
     return;
   }
 
-  const unlocked = forestProgress >= 5;
+  const unlocked = isForestCleared();
 
   area.disabled = !unlocked;
   area.classList.toggle("locked-area", !unlocked);
