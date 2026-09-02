@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>9×9モンスターズ</title>
+
+  <link rel="stylesheet" href="style.css?v=2">
+
+  <style>
+    #lake-screen {
+      background: linear-gradient(#d7f3ff, #eefbff);
+    }
+    #lake-screen .forest-route::before {
+      background: #a9d8e8;
+    }
+    #lake-screen .forest-node .node-icon {
+      background: #e2f6ff;
+    }
+  </style>
+</head>
+
+
+<body>
+
+<div class="game">
+
+  <button id="bgm-toggle" class="bgm-toggle">
+  <span class="bgm-icon">🔇</span>
+    <span class="bgm-label">OFF</span>
+</button>
+
+  <!-- =================================
+       タイトル
+  ================================= -->
+
+  <section
+    id="title-screen"
+    class="screen active"
+  >
+
+    <audio
+  id="op-bgm"
+  src="audio/op.mp3"
+  loop
+>
+</audio>
+    
+    <div class="logo">
+
+      <div class="logo-monster">
+        🦊
+      </div>
+
+      <h1>
+        9×9モンスターズ
+      </h1>
+
+      <p>
+        九九を勉強して<br>
+        モンスターと冒険に行こう！
+      </p>
+
+    </div>
+
+
+    <div class="main-menu-buttons">
+
+  <button
+    id="title-training-button"
+    class="main-button"
+  >
+    🥋 九九
+    <small>九九を練習する</small>
+  </button>
+
+  <button
+    id="title-world-button"
+    class="main-button"
+  >
+    🗺️ 冒険
+    <small>モンスターと冒険する</small>
+  </button>
+
+  <button
+    id="title-monster-button"
+    class="main-button"
+  >
+    💪 育成
+    <small>モンスターを育てる</small>
+  </button>
+
+</div>
+
+  </section>
+
+
+
+  <!-- =================================
+       修行ステージ選択
+  ================================= -->
+
+  <section
+    id="training-screen"
+    class="screen"
+  >
+
+    <div class="page-title">
+
+      <div>
+        <img src="images/sisyou.png" class="dojo-master-icon">
+    <span>九九修行道場</span>
+      </div>
+
+      <p>
+        1の段から順番に<br>
+        九九を極めよう！
+      </p>
+
+    </div>
+
+
+    <div
+      id="stage-list"
+      class="stage-list"
+    ></div>
+
+
+    <div
+      id="save-status"
+      class="save-status"
+    ></div>
+
+
+    <button
+      id="reset-data"
+      class="reset-button"
+    >
+      🗑️ セーブデータを消して最初から
+    </button>
+
+  </section>
+
+
+
+  <!-- =================================
+       修行クイズ
+  ================================= -->
+
+  <section
+    id="quiz-screen"
+    class="screen"
+  >
+
+    <div class="training-header">
+
+      <button
+        id="back-training"
+        class="small-button"
+      >
+        ← 修行道場
+      </button>
+
+
+      <div id="training-title">
+        1の段 修行
+      </div>
+
+    </div>
+
+
+    <div class="progress">
+
+      <span id="progress-text">
+        第1問 / 9問
+      </span>
+
+
+      <div class="progress-bar">
+
+        <div
+          id="progress-fill"
+        ></div>
+
+      </div>
+
+    </div>
+
+
+    <div class="teacher">
+
+      <img src="images/sisyou.png" class="teacher-icon">
+
+      <div>
+
+        <strong>
+          修行師匠
+        </strong>
+
+        <p id="teacher-message">
+          集中して答えるのじゃ！
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="question-box">
+
+      <div
+        id="question"
+        class="question"
+      >
+        1 × 1 = ?
+      </div>
+
+
+      <div
+        id="answers"
+        class="answers"
+      ></div>
+
+
+      <div
+        id="message"
+        class="message"
+      ></div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =================================
+       修行結果
+  ================================= -->
+
+  <section
+    id="result-screen"
+    class="screen"
+  >
+
+    <div class="result-icon">
+      🏆
+    </div>
+
+
+    <h1 id="result-title">
+      修行完了！
+    </h1>
+
+
+    <p id="result-message">
+      よく頑張った！
+    </p>
+
+
+    <div class="result-box">
+
+      <div>
+        正解数
+        <strong id="result-correct">
+          0
+        </strong>
+      </div>
+
+
+      <div>
+        コンボ
+        <strong id="result-combo">
+          0
+        </strong>
+      </div>
+
+
+      <div>
+        評価
+        <strong id="result-stars">
+          ☆☆☆
+        </strong>
+      </div>
+
+    </div>
+
+
+    <!-- モンスターGET -->
+
+    <div
+      id="reward-box"
+      class="reward-box hidden"
+    >
+
+      <div class="reward-title">
+        🎉 新しい仲間をGET！
+      </div>
+
+
+      <div
+        id="reward-monster"
+        class="reward-monster"
+      >
+        👾
+      </div>
+
+
+      <strong id="reward-name">
+        モンスター
+      </strong>
+
+
+      <small id="reward-description">
+        新しい仲間が図鑑に登録された！
+      </small>
+
+    </div>
+
+
+    <button
+      id="next-stage"
+      class="main-button"
+    >
+      次の修行へ
+    </button>
+
+
+    <button
+      id="retry-stage"
+      class="sub-button"
+    >
+      もう一度修行する
+    </button>
+
+
+    <button
+      id="monster-book-button"
+      class="sub-button"
+    >
+      📖 モンスター図鑑を見る
+    </button>
+
+  </section>
+
+
+
+  <!-- =================================
+       冒険解禁
+  ================================= -->
+
+  <section
+    id="adventure-screen"
+    class="screen"
+  >
+
+    <div class="adventure">
+
+      <div class="adventure-icon">
+        🗺️
+      </div>
+
+
+      <h1>
+        九九マスター！
+      </h1>
+
+
+      <p>
+        すべての九九を<br>
+        極めたぞ！
+      </p>
+
+
+      <div class="master-message">
+
+        「ここからが<br>
+        本当の冒険じゃ！」
+
+      </div>
+
+
+      <button
+        id="adventure-button"
+        class="main-button"
+      >
+        🗺️ 冒険へ出発！
+      </button>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =================================
+       冒険マップ
+  ================================= -->
+
+  <section
+    id="world-screen"
+    class="screen"
+  >
+
+    <div class="world-header">
+
+      <button
+        id="world-back-button"
+        class="small-button"
+      >
+        ← 戻る
+      </button>
+
+
+      <h1>
+        🗺️ 冒険マップ
+      </h1>
+
+    </div>
+
+
+    <div class="player-stats">
+
+      <div>
+
+        冒険レベル
+
+        <strong id="player-level">
+          Lv.1
+        </strong>
+
+      </div>
+
+
+      <div>
+
+        コイン
+
+        <strong id="player-coins">
+          0
+        </strong>
+
+      </div>
+
+    </div>
+
+
+    <div class="world-map">
+
+      <!-- はじまりの森 -->
+
+      <button
+        id="forest-area"
+        class="map-area forest"
+      >
+
+        🌳
+
+        <strong>
+          はじまりの森
+        </strong>
+
+        <small>
+          冒険をはじめる
+        </small>
+
+      </button>
+
+
+      <!-- 九九の湖 -->
+
+      <button
+        id="lake-area"
+        class="map-area lake locked-area"
+        disabled
+      >
+
+        🌊
+
+        <strong>
+          九九の湖
+        </strong>
+
+        <small>
+          はじまりの森クリアで解放
+        </small>
+
+      </button>
+
+
+      <!-- かけ算山 -->
+
+      <button
+        class="map-area mountain locked-area"
+        disabled
+      >
+
+        🗻
+
+        <strong>
+          かけ算山
+        </strong>
+
+        <small>
+          COMING SOON
+        </small>
+
+      </button>
+
+
+      <!-- 九九王城 -->
+
+      <button
+        class="map-area castle locked-area"
+        disabled
+      >
+
+        🏰
+
+        <strong>
+          九九王城
+        </strong>
+
+        <small>
+          COMING SOON
+        </small>
+
+      </button>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =================================
+       はじまりの森
+       探索マップ
+  ================================= -->
+
+  <section
+    id="forest-screen"
+    class="screen"
+  >
+
+    <div class="forest-header">
+
+      <button
+        id="forest-back-button"
+        class="small-button"
+      >
+        ← マップ
+      </button>
+
+
+      <div>
+
+        <h1>
+          🌳 はじまりの森
+        </h1>
+
+        <small>
+          全5バトル
+        </small>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="forest-intro">
+
+      <div class="forest-art">
+        🌳🌲🌳
+      </div>
+
+
+      <h2>
+        森を進もう！
+      </h2>
+
+
+      <p>
+        九九を使って<br>
+        モンスターたちを倒しながら<br>
+        森の奥を目指そう！
+      </p>
+
+    </div>
+
+
+
+    <!-- =================================
+         探索ルート
+    ================================= -->
+
+    <div class="forest-route">
+
+
+      <!-- START -->
+
+      <div
+        class="forest-node start-node"
+      >
+
+        <div class="node-icon">
+          🏕️
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            森の入口
+          </strong>
+
+          <small>
+            START
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- BATTLE 1 -->
+
+      <button
+        class="forest-node battle-node"
+        data-battle="1"
+      >
+
+        <div class="node-icon">
+          ⚔️
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            森の小道
+          </strong>
+
+          <small>
+            バトル①
+          </small>
+
+        </div>
+
+      </button>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- BATTLE 2 -->
+
+      <button
+        class="forest-node battle-node locked-node"
+        data-battle="2"
+        disabled
+      >
+
+        <div class="node-icon">
+          🔒
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            森の奥へ
+          </strong>
+
+          <small>
+            バトル②
+          </small>
+
+        </div>
+
+      </button>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- BATTLE 3 -->
+
+      <button
+        class="forest-node battle-node locked-node"
+        data-battle="3"
+        disabled
+      >
+
+        <div class="node-icon">
+          🔒
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            キノコ広場
+          </strong>
+
+          <small>
+            バトル③
+          </small>
+
+        </div>
+
+      </button>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- BATTLE 4 -->
+
+      <button
+        class="forest-node battle-node locked-node"
+        data-battle="4"
+        disabled
+      >
+
+        <div class="node-icon">
+          🔒
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            深い森
+          </strong>
+
+          <small>
+            バトル④
+          </small>
+
+        </div>
+
+      </button>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- BOSS -->
+
+      <button
+        class="forest-node boss-node locked-node"
+        data-battle="6"
+        disabled
+      >
+
+        <div class="node-icon">
+          👹
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            森の奥・ボスの巣
+          </strong>
+
+          <small>
+            BOSS BATTLE
+          </small>
+
+        </div>
+
+      </button>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- GOAL -->
+
+      <div
+        class="forest-node goal-node locked-node"
+      >
+
+        <div class="node-icon">
+          🏆
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            はじまりの森クリア
+          </strong>
+
+          <small>
+            ボスを倒すと到達！
+          </small>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="forest-progress">
+
+      <strong>
+        森の攻略状況
+      </strong>
+
+
+      <div class="forest-progress-bar">
+
+        <div
+          id="forest-progress-fill"
+        ></div>
+
+      </div>
+
+
+      <small id="forest-progress-text">
+        0 / 6 バトルクリア
+      </small>
+
+    </div>
+
+  </section>
+
+
+  <section
+    id="lake-screen"
+    class="screen forest-screen lake-screen"
+  >
+
+    <div class="forest-header">
+
+      <button
+        id="lake-back-button"
+        class="small-button"
+      >
+        ← マップ
+      </button>
+
+
+      <div>
+
+        <h1>
+          🌊 九九の湖
+        </h1>
+
+        <small>
+          全5バトル
+        </small>
+
+      </div>
+
+    </div>
+
+
+
+    <div class="forest-intro">
+
+      <div class="forest-art">
+        🌊💧🌊
+      </div>
+
+
+      <h2>
+        湖を進もう！
+      </h2>
+
+
+      <p>
+        九九を使って<br>
+        水のモンスターたちを倒しながら<br>
+        湖底を目指そう！
+      </p>
+
+    </div>
+
+
+
+    <!-- =================================
+         探索ルート
+    ================================= -->
+
+    <div class="forest-route">
+
+
+      <!-- START -->
+
+      <div
+        class="forest-node start-node"
+      >
+
+        <div class="node-icon">
+          🏕️
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            湖畔
+          </strong>
+
+          <small>
+            START
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- BATTLE 1 -->
+
+      <button
+        class="forest-node battle-node"
+        data-battle="1"
+      >
+
+        <div class="node-icon">
+          ⚔️
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            湖畔の浅瀬
+          </strong>
+
+          <small>
+            バトル①
+          </small>
+
+        </div>
+
+      </button>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- BATTLE 2 -->
+
+      <button
+        class="forest-node battle-node locked-node"
+        data-battle="2"
+        disabled
+      >
+
+        <div class="node-icon">
+          🔒
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            水草の迷路
+          </strong>
+
+          <small>
+            バトル②
+          </small>
+
+        </div>
+
+      </button>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- BATTLE 3 -->
+
+      <button
+        class="forest-node battle-node locked-node"
+        data-battle="3"
+        disabled
+      >
+
+        <div class="node-icon">
+          🔒
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            青の洞窟
+          </strong>
+
+          <small>
+            バトル③
+          </small>
+
+        </div>
+
+      </button>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- BATTLE 4 -->
+
+      <button
+        class="forest-node battle-node locked-node"
+        data-battle="4"
+        disabled
+      >
+
+        <div class="node-icon">
+          🔒
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            深き湖底
+          </strong>
+
+          <small>
+            バトル④
+          </small>
+
+        </div>
+
+      </button>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- BOSS -->
+
+      <button
+        class="forest-node boss-node locked-node"
+        data-battle="5"
+        disabled
+      >
+
+        <div class="node-icon">
+          👹
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            湖底・ボスの間
+          </strong>
+
+          <small>
+            BOSS BATTLE
+          </small>
+
+        </div>
+
+      </button>
+
+
+      <div class="route-line"></div>
+
+
+      <!-- GOAL -->
+
+      <div
+        class="forest-node goal-node locked-node"
+      >
+
+        <div class="node-icon">
+          🏆
+        </div>
+
+        <div class="node-info">
+
+          <strong>
+            九九の湖クリア
+          </strong>
+
+          <small>
+            ボスを倒すと到達！
+          </small>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="forest-progress">
+
+      <strong>
+        湖の攻略状況
+      </strong>
+
+
+      <div class="forest-progress-bar">
+
+        <div
+          id="lake-progress-fill"
+        ></div>
+
+      </div>
+
+
+      <small id="lake-progress-text">
+        0 / 5 バトルクリア
+      </small>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =================================
+       バトル
+  ================================= -->
+
+  <section
+    id="battle-screen"
+    class="screen"
+  >
+
+    <div class="battle-header">
+
+      <button
+        id="battle-back-button"
+        class="small-button"
+      >
+        ← 森へ戻る
+      </button>
+
+
+      <span id="battle-number">
+        BATTLE 1
+      </span>
+
+    </div>
+
+
+    <!-- 敵 -->
+
+    <div class="enemy-area">
+
+      <div
+        id="enemy-name"
+        class="battle-name"
+      >
+        スライム
+      </div>
+
+
+      <div
+        id="enemy-level"
+        class="battle-level"
+      >
+        Lv.1
+      </div>
+
+
+      <div
+        id="enemy-image"
+        class="battle-monster-image"
+      >
+        🟢
+      </div>
+
+
+      <div class="hp-label">
+
+        <span>
+          HP
+        </span>
+
+        <strong id="enemy-hp-text">
+          20 / 20
+        </strong>
+
+      </div>
+
+
+      <div class="battle-hp">
+
+        <div
+          id="enemy-hp-fill"
+          class="battle-hp-fill"
+        ></div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- メッセージ -->
+
+    <div
+      id="battle-message"
+      class="battle-message"
+    >
+      九九に答えて攻撃しよう！
+    </div>
+
+
+
+    <!-- 味方 -->
+
+    <div class="player-battle">
+
+      <div
+        id="player-monster-image"
+        class="player-monster-image"
+      >
+        🦊
+      </div>
+
+
+      <div class="player-battle-info">
+
+        <div class="battle-name">
+
+          <span id="player-monster-name">
+            モンスター
+          </span>
+
+          <span id="player-monster-level">
+            Lv.1
+          </span>
+
+        </div>
+
+
+        <div class="hp-label">
+
+          <span>
+            HP
+          </span>
+
+          <strong id="player-hp-text">
+            30 / 30
+          </strong>
+
+        </div>
+
+
+        <div class="battle-hp">
+
+          <div
+            id="player-hp-fill"
+            class="battle-hp-fill"
+          ></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- 九九問題 -->
+
+    <div class="battle-question-box">
+
+      <div
+        id="battle-question"
+        class="battle-question"
+      >
+        2 × 3 = ?
+      </div>
+
+
+      <div
+        id="battle-answers"
+        class="battle-answers"
+      ></div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =================================
+       バトル結果
+  ================================= -->
+
+  <section
+    id="battle-result-screen"
+    class="screen"
+  >
+
+    <div class="battle-result">
+
+      <div class="battle-result-icon">
+        ⚔️
+      </div>
+
+
+      <h1 id="battle-result-title">
+        バトル勝利！
+      </h1>
+
+
+      <p id="battle-result-message">
+        モンスターを倒した！
+      </p>
+
+
+      <div class="battle-reward">
+
+        <div>
+
+          経験値
+
+          <strong id="battle-exp">
+            +10
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          コイン
+
+          <strong id="battle-coins">
+            +5
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <button
+        id="battle-next-button"
+        class="main-button"
+      >
+        次へ進む
+      </button>
+
+
+      <button
+        id="battle-return-forest"
+        class="sub-button"
+      >
+        🌳 森のマップへ
+      </button>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =================================
+       モンスター育成
+  ================================= -->
+
+  <section
+    id="training-monster-screen"
+    class="screen"
+  >
+
+    <div class="page-title">
+
+      <div>
+        💪 モンスター育成
+      </div>
+
+      <p>
+        仲間を育てて強くしよう！
+      </p>
+
+    </div>
+
+
+    <div
+      id="monster-party"
+      class="monster-party"
+    ></div>
+
+
+    <div
+      id="monster-detail"
+      class="monster-detail"
+    ></div>
+
+
+    <button
+      id="back-world"
+      class="sub-button"
+    >
+      ← 冒険へ戻る
+    </button>
+
+  </section>
+
+
+
+  <!-- =================================
+       モンスター図鑑
+  ================================= -->
+
+  <section
+    id="monster-book-screen"
+    class="screen"
+  >
+
+    <div class="book-header">
+
+      <button
+        id="book-back"
+        class="small-button"
+      >
+        ← 戻る
+      </button>
+
+
+      <div>
+
+        <h1>
+          📖 モンスター図鑑
+        </h1>
+
+        <p>
+          出会ったモンスターを記録しよう！
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="monster-list"
+      class="monster-list"
+    ></div>
+
+  </section>
+
+
+
+  <!-- =================================
+       レベルアップ
+  ================================= -->
+
+  <section
+    id="levelup-screen"
+    class="screen"
+  >
+
+    <div class="levelup">
+
+      <div class="levelup-icon">
+        ✨
+      </div>
+
+
+      <h1>
+        LEVEL UP!
+      </h1>
+
+
+      <div
+        id="levelup-monster"
+        class="levelup-monster"
+      >
+        🦊
+      </div>
+
+
+      <div
+        id="level-change"
+        class="level-change"
+      >
+        Lv.1 → Lv.2
+      </div>
+
+
+      <div class="levelup-stats">
+
+        <div>
+          HP
+          <strong id="levelup-hp">
+            +5
+          </strong>
+        </div>
+
+
+        <div>
+          攻撃
+          <strong id="levelup-attack">
+            +2
+          </strong>
+        </div>
+
+
+        <div>
+          防御
+          <strong id="levelup-defense">
+            +1
+          </strong>
+        </div>
+
+      </div>
+
+
+      <button
+        id="levelup-button"
+        class="main-button"
+      >
+        👍 OK！
+      </button>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =================================
+       下部メニュー
+  ================================= -->
+
+  <nav
+    id="menu"
+    class="menu hidden"
+  >
+
+    <button
+      id="training-button"
+    >
+      🥋<br>
+      修行
+    </button>
+
+
+    <button
+      id="world-button"
+    >
+      🗺️<br>
+      冒険
+    </button>
+
+
+    <button
+      id="monster-button"
+    >
+      👾<br>
+      育成
+    </button>
+
+  </nav>
+
+
+</div>
+
+
+<script src="script.js?v=3"></script>
+
+</body>
+
+</html>
