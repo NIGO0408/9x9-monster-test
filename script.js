@@ -30,7 +30,9 @@ const BGM_LIST = {
   forestBoss: "audio/forest_boss.mp3",
   lake: "audio/lake.mp3",
   lakeBattle: "audio/lake_battle.mp3",
-  lakeBoss: "audio/lake_boss.mp3"
+  lakeBoss: "audio/lake_boss.mp3",
+  levelup: "audio/levelup.mp3",
+  bossClear: "audio/boss_clear.mp3"
 };
 
 let currentBgmKey = null;
@@ -41,15 +43,18 @@ function getBgmKeyForScreen(screenId) {
     case "world-screen": return "world";
     case "training-screen": return "training";    
      case "quiz-screen": return "training";
-   　case "training-monster-screen": return "trainingMonster";  
+   　case "training-monster-screen": return "trainingMonster";
+     case "levelup-screen": return "levelup";   
     case "forest-screen": return "forest";
     case "lake-screen": return "lake";
     case "battle-screen":
-    case "battle-result-screen":
-      if (currentAdventureStage === "lake") {
-        return currentBattleNumber === 5 ? "lakeBoss" : "lakeBattle";
-      }
-      return currentBattleNumber === 6 ? "forestBoss" : "forestBattle";
+  if (currentAdventureStage === "lake") {
+    return currentBattleNumber === 6 ? "lakeBoss" : "lakeBattle";
+  }
+  return currentBattleNumber === 6 ? "forestBoss" : "forestBattle";
+
+case "battle-result-screen":
+  return null;
     default: return null;
   }
 }
@@ -88,6 +93,30 @@ function playBgm(key) {
 
   opBgm.volume = 0.2;
   opBgm.loop = true;
+  opBgm.play().catch(() => {});
+}
+
+function playOneShotBgm(key, returnToScreen = null) {
+  const opBgm = document.getElementById("op-bgm");
+  if (!opBgm || !bgmEnabled) return;
+
+  const bgmPath = BGM_LIST[key];
+  if (!bgmPath) return;
+
+  opBgm.onended = null;
+  opBgm.src = bgmPath;
+  opBgm.currentTime = 0;
+  opBgm.volume = 0.2;
+  opBgm.loop = false;
+
+  opBgm.onended = () => {
+    opBgm.onended = null;
+
+    if (bgmEnabled && returnToScreen) {
+      updateBgmForScreen(returnToScreen);
+    }
+  };
+
   opBgm.play().catch(() => {});
 }
 
@@ -505,7 +534,7 @@ function isLakeUnlocked() {
 }
 
 function isLakeCleared() {
-  return lakeProgress >= 5;
+  return lakeProgress >= 6;
 }
 
 /* =========================================================
@@ -1604,24 +1633,19 @@ function finishTraining() {
 
   answering = false;
 
-
   const stars =
     getStars(
       correctCount
     );
 
-
   const resultCorrect =
     el("result-correct");
-
 
   const resultCombo =
     el("result-combo");
 
-
   const resultStars =
     el("result-stars");
-
 
   if (resultCorrect) {
 
@@ -1630,14 +1654,12 @@ function finishTraining() {
 
   }
 
-
   if (resultCombo) {
 
     resultCombo.textContent =
       maxCombo;
 
   }
-
 
   if (resultStars) {
 
@@ -1646,10 +1668,8 @@ function finishTraining() {
 
   }
 
-
   const rewardBox =
     el("reward-box");
-
 
   if (rewardBox) {
 
@@ -1662,10 +1682,10 @@ function finishTraining() {
 
   }
 
-
   const nextButton =
     el("next-stage");
 
+  let rewardIsNew = false;
 
   if (
     correctCount >= 8
@@ -1687,7 +1707,6 @@ function finishTraining() {
 
     }
 
-
     /*
        星評価
     */
@@ -1697,14 +1716,12 @@ function finishTraining() {
         currentStage
       ] || "";
 
-
     const starValue =
       stars === "⭐⭐⭐"
         ? 3
         : stars === "⭐⭐☆"
           ? 2
           : 1;
-
 
     const oldValue =
       oldStars === "⭐⭐⭐"
@@ -1714,7 +1731,6 @@ function finishTraining() {
           : oldStars === "⭐☆☆"
             ? 1
             : 0;
-
 
     if (
       starValue > oldValue
@@ -1726,7 +1742,6 @@ function finishTraining() {
 
     }
 
-
     /*
        モンスターGET
     */
@@ -1736,22 +1751,19 @@ function finishTraining() {
         currentStage
       );
 
-
     if (monster) {
 
-      const isNew =
+      rewardIsNew =
         catchMonster(
           monster.id
         );
 
-
       showReward(
         monster,
-        isNew
+        rewardIsNew
       );
 
     }
-
 
     /*
        9の段までクリアすると
@@ -1767,14 +1779,11 @@ function finishTraining() {
 
     }
 
-
     const title =
       el("result-title");
 
-
     const message =
       el("result-message");
-
 
     if (title) {
 
@@ -1785,7 +1794,6 @@ function finishTraining() {
 
     }
 
-
     if (message) {
 
       message.textContent =
@@ -1795,12 +1803,10 @@ function finishTraining() {
 
     }
 
-
     if (nextButton) {
 
       nextButton.style.display =
         "inline-block";
-
 
       nextButton.textContent =
         currentStage === 9
@@ -1808,7 +1814,6 @@ function finishTraining() {
           : `🥋 ${currentStage + 1}の段へ`;
 
     }
-
 
     saveGame();
 
@@ -1819,10 +1824,8 @@ function finishTraining() {
     const title =
       el("result-title");
 
-
     const message =
       el("result-message");
-
 
     if (title) {
 
@@ -1831,14 +1834,12 @@ function finishTraining() {
 
     }
 
-
     if (message) {
 
       message.textContent =
         "8問以上正解すると合格だよ！";
 
     }
-
 
     if (nextButton) {
 
@@ -1849,12 +1850,20 @@ function finishTraining() {
 
   }
 
-
   showScreen(
     "result-screen"
   );
+
+  /*
+     新しいモンスターをGETしたとき
+     レベルアップ曲を再生
+  */
+
+  if (rewardIsNew) {
+  playOneShotBgm("levelup");
 }
 
+}
 
 /* =========================================================
    モンスター育成画面
@@ -2980,6 +2989,8 @@ function showLevelUp(
   showScreen(
     "levelup-screen"
   );
+
+  playOneShotBgm("levelup");
 }
 
 
@@ -3601,6 +3612,96 @@ if (number === 6) {
    バトル準備
    ========================================================= */
 
+function showBossWarning() {
+  const enemyImage = el("enemy-image");
+  if (!enemyImage) return;
+
+  const warning = document.createElement("div");
+
+  warning.className = "boss-warning";
+  warning.textContent = "⚠️ WARNING ⚠️";
+
+  enemyImage.appendChild(warning);
+
+  enemyImage.style.position = "relative";
+
+  warning.style.position = "absolute";
+  warning.style.top = "50%";
+  warning.style.left = "50%";
+  warning.style.transform = "translate(-50%, -50%)";
+
+  warning.animate(
+    [
+      { opacity: 0 },
+      { opacity: 1 },
+      { opacity: 0 },
+      { opacity: 1 },
+      { opacity: 0 },
+      { opacity: 1 },
+      { opacity: 0 }
+    ],
+    {
+      duration: 3000,
+      easing: "linear",
+      fill: "forwards"
+    }
+  );
+
+  setTimeout(() => {
+    warning.remove();
+  }, 3000);
+}
+
+function playBossEntrance() {
+  const enemyImage = el("enemy-image");
+  if (!enemyImage) return;
+
+  const target =
+    enemyImage.querySelector("img") || enemyImage;
+
+  target.animate(
+    [
+      {
+        opacity: 0,
+        transform: "translateY(220px) translateX(0) rotate(0deg)"
+      },
+      {
+        opacity: 1,
+        transform: "translateY(185px) translateX(-14px) rotate(-2deg)"
+      },
+      {
+        opacity: 1,
+        transform: "translateY(145px) translateX(14px) rotate(2deg)"
+      },
+      {
+        opacity: 1,
+        transform: "translateY(105px) translateX(-12px) rotate(-1.8deg)"
+      },
+      {
+        opacity: 1,
+        transform: "translateY(70px) translateX(10px) rotate(1.5deg)"
+      },
+      {
+        opacity: 1,
+        transform: "translateY(40px) translateX(-7px) rotate(-1deg)"
+      },
+      {
+        opacity: 1,
+        transform: "translateY(15px) translateX(4px) rotate(0.5deg)"
+      },
+      {
+        opacity: 1,
+        transform: "translateY(0) translateX(0) rotate(0deg)"
+      }
+    ],
+    {
+      duration: 4000,
+      easing: "ease-out",
+      fill: "forwards"
+    }
+  );
+}
+
 function setupBattle() {
 
   const monster =
@@ -3772,6 +3873,19 @@ function setupBattle() {
 
   }
 
+ if (currentBattleNumber === 6) {
+  const bossTarget =
+    enemyImage.querySelector("img") || enemyImage;
+
+  bossTarget.style.opacity = "0";
+  bossTarget.style.transform = "scale(0.2)";
+
+  showBossWarning();
+
+  setTimeout(() => {
+    playBossEntrance();
+  }, 3200);
+}
 
   /*
      味方
@@ -4641,6 +4755,10 @@ function battleWin() {
     "battle-result-screen"
   );
 
+  if (currentBattleNumber === 6) {
+  playBossClearFanfare();
+} 
+
   if (leveledUp) {
     setTimeout(
       () => {
@@ -4654,6 +4772,35 @@ function battleWin() {
   }
 }
 
+function playBossClearFanfare() {
+  const opBgm = document.getElementById("op-bgm");
+  if (!opBgm || !bgmEnabled) return;
+
+  const returnScreen = "battle-result-screen";
+
+  opBgm.onended = null;
+  opBgm.src = "audio/boss_clear.mp3";
+  opBgm.currentTime = 0;
+  opBgm.volume = 0.2;
+  opBgm.loop = false;
+
+  opBgm.onended = () => {
+    opBgm.onended = null;
+
+    const activeScreen =
+      document.querySelector(".screen.active");
+
+    if (
+      bgmEnabled &&
+      activeScreen &&
+      activeScreen.id === returnScreen
+    ) {
+      updateBgmForScreen(returnScreen);
+    }
+  };
+
+  opBgm.play().catch(() => {});
+}
 
 /* =========================================================
    バトル敗北
@@ -5234,15 +5381,41 @@ function updateLakeMap() {
     if (!icon) return;
 
     if (cleared) icon.textContent = "⭐";
-    else if (number === 5) icon.textContent = unlocked ? "👑" : "🔒";
+    else if (number === 6) icon.textContent = unlocked ? "👑" : "🔒";
     else icon.textContent = unlocked ? "⚔️" : "🔒";
   });
 
   const fill = el("lake-progress-fill");
-  if (fill) fill.style.width = `${lakeProgress / 5 * 100}%`;
+  if (fill) fill.style.width = `${lakeProgress / 6 * 100}%`;
 
   const progress = el("lake-progress-text");
-  if (progress) progress.textContent = `${lakeProgress} / 5 バトルクリア`;
+  if (progress) progress.textContent = `${lakeProgress} / 6 バトルクリア`;
+}
+
+const goal =
+  document.querySelector(
+    "#lake-screen .goal-node"
+  );
+
+if (goal) {
+  goal.classList.toggle(
+    "locked-node",
+    lakeProgress < 6
+  );
+
+  if (
+    lakeProgress >= 6
+  ) {
+    const icon =
+      goal.querySelector(
+        ".node-icon"
+      );
+
+    if (icon) {
+      icon.textContent =
+        "🏆";
+    }
+  }
 }
 
 function startLakeBattle(battleNumber) {
@@ -5319,10 +5492,10 @@ function startLakeBattle(battleNumber) {
 
   /*
      湖の敵を決定。
-     ⑤は湖底の主。
+     ⑥は湖底の主。
   */
   if (
-    number === 5
+    number === 6
   ) {
     currentWildMonster = {
       ...adventureStages.lake.boss
@@ -5856,6 +6029,204 @@ async function showLastUpdate() {
 
 showLastUpdate();
 
+function activateDeveloperMode() {
+
+  const choice = prompt(
+    "🔧 開発者メニュー\n\n" +
+    "1：全開放＋全員MAX\n" +
+    "2：全モンスター仲間入り\n" +
+    "3：冒険を解放\n" +
+    "4：森をクリア状態にする\n" +
+    "5：湖を解放\n\n" +
+    "キャンセル：終了"
+  );
+
+  if (choice === null) {
+    return;
+  }
+
+  /* 全開放＋全員MAX */
+  if (choice === "1") {
+
+    monsters.forEach(monster => {
+
+      const data =
+        getMonsterData(monster.id);
+
+      if (!data) return;
+
+      if (
+        !caughtMonsters.includes(
+          monster.id
+        )
+      ) {
+        caughtMonsters.push(
+          monster.id
+        );
+      }
+
+      data.level =
+        monster.maxLevel;
+
+      data.exp = 0;
+
+      data.hp =
+        monster.baseHP +
+        monster.hpGrowth *
+        (monster.maxLevel - 1);
+
+      data.attack =
+        monster.baseAttack +
+        monster.attackGrowth *
+        (monster.maxLevel - 1);
+
+      data.defense =
+        monster.baseDefense +
+        monster.defenseGrowth *
+        (monster.maxLevel - 1);
+    });
+
+    adventureUnlocked = true;
+    forestProgress = 6;
+    forestCurrentHP = 0;
+    lakeProgress = 6;
+
+    saveGame();
+
+    alert(
+      "🚀 全開放しました！\n\n" +
+      "全モンスター仲間入り\n" +
+      "全モンスターMAXレベル\n" +
+      "森クリア\n" +
+      "湖クリア"
+    );
+
+    return;
+  }
+
+  /* 全モンスター仲間入り */
+  if (choice === "2") {
+
+    monsters.forEach(monster => {
+
+      if (
+        !caughtMonsters.includes(
+          monster.id
+        )
+      ) {
+        caughtMonsters.push(
+          monster.id
+        );
+      }
+
+      getMonsterData(monster.id);
+    });
+
+    saveGame();
+
+    alert(
+      "🐉 全モンスターを仲間にしました！"
+    );
+
+    return;
+  }
+
+  /* 冒険を解放 */
+  if (choice === "3") {
+
+    adventureUnlocked = true;
+
+    saveGame();
+
+    alert(
+      "🗺️ 冒険を解放しました！"
+    );
+
+    return;
+  }
+
+  /* 森をクリア状態にする */
+  if (choice === "4") {
+
+    adventureUnlocked = true;
+    forestProgress = 6;
+
+    saveGame();
+
+    alert(
+      "🌳 はじまりの森を\n" +
+      "クリア状態にしました！"
+    );
+
+    return;
+  }
+
+  /* 湖を解放 */
+  if (choice === "5") {
+
+    adventureUnlocked = true;
+    forestProgress = 6;
+
+    saveGame();
+
+    alert(
+      "🌊 九九の湖を解放しました！"
+    );
+
+    return;
+  }
+
+  alert(
+    "❌ 無効な番号です。"
+  );
+}
+
+/* =========================================================
+   開発者モード
+   タイトルロゴ5回タップ
+   ========================================================= */
+
+let devTapCount = 0;
+let devTapTimer = null;
+
+const devLogo = document.querySelector(".logo");
+
+if (devLogo) {
+  devLogo.addEventListener("click", () => {
+
+    const titleScreen =
+      document.getElementById("title-screen");
+
+    if (
+      !titleScreen ||
+      !titleScreen.classList.contains("active")
+    ) {
+      return;
+    }
+
+    devTapCount++;
+
+    clearTimeout(devTapTimer);
+
+    devTapTimer = setTimeout(() => {
+      devTapCount = 0;
+    }, 1500);
+
+    if (devTapCount >= 5) {
+  devTapCount = 0;
+  clearTimeout(devTapTimer);
+
+  const password =
+    prompt("🔐 開発者モード\nパスワードを入力してください");
+
+  if (password === "9x9dev") {
+    activateDeveloperMode();
+  } else if (password !== null) {
+    alert("❌ パスワードが違います");
+  }
+}
+  });
+}
 
 /* =========================================================
    起動時の安全処理
