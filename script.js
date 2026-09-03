@@ -3660,42 +3660,26 @@ function playBossEntrance() {
     enemyImage.querySelector("img") || enemyImage;
 
   target.animate(
-    [
-      {
-        opacity: 0,
-        transform: "translateY(220px) translateX(0) rotate(0deg)"
-      },
-      {
-        opacity: 1,
-        transform: "translateY(185px) translateX(-14px) rotate(-2deg)"
-      },
-      {
-        opacity: 1,
-        transform: "translateY(145px) translateX(14px) rotate(2deg)"
-      },
-      {
-        opacity: 1,
-        transform: "translateY(105px) translateX(-12px) rotate(-1.8deg)"
-      },
-      {
-        opacity: 1,
-        transform: "translateY(70px) translateX(10px) rotate(1.5deg)"
-      },
-      {
-        opacity: 1,
-        transform: "translateY(40px) translateX(-7px) rotate(-1deg)"
-      },
-      {
-        opacity: 1,
-        transform: "translateY(15px) translateX(4px) rotate(0.5deg)"
-      },
-      {
-        opacity: 1,
-        transform: "translateY(0) translateX(0) rotate(0deg)"
-      }
-    ],
+  [
+  { opacity: 0, transform: "translateY(220px) translateX(0) rotate(0deg)" },
+  { opacity: 1, transform: "translateY(205px) translateX(-3px) rotate(-0.4deg)" },
+  { opacity: 1, transform: "translateY(190px) translateX(3px) rotate(0.4deg)" },
+  { opacity: 1, transform: "translateY(175px) translateX(-3px) rotate(-0.4deg)" },
+  { opacity: 1, transform: "translateY(160px) translateX(3px) rotate(0.4deg)" },
+  { opacity: 1, transform: "translateY(145px) translateX(-3px) rotate(-0.4deg)" },
+  { opacity: 1, transform: "translateY(130px) translateX(3px) rotate(0.4deg)" },
+  { opacity: 1, transform: "translateY(115px) translateX(-3px) rotate(-0.4deg)" },
+  { opacity: 1, transform: "translateY(100px) translateX(3px) rotate(0.4deg)" },
+  { opacity: 1, transform: "translateY(85px) translateX(-2px) rotate(-0.3deg)" },
+  { opacity: 1, transform: "translateY(70px) translateX(2px) rotate(0.3deg)" },
+  { opacity: 1, transform: "translateY(55px) translateX(-2px) rotate(-0.3deg)" },
+  { opacity: 1, transform: "translateY(40px) translateX(2px) rotate(0.3deg)" },
+  { opacity: 1, transform: "translateY(25px) translateX(-1px) rotate(-0.2deg)" },
+  { opacity: 1, transform: "translateY(10px) translateX(1px) rotate(0.2deg)" },
+  { opacity: 1, transform: "translateY(0) translateX(0) rotate(0deg)" }
+],
     {
-      duration: 4000,
+      duration: 3000,
       easing: "ease-out",
       fill: "forwards"
     }
