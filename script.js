@@ -32,7 +32,9 @@ const BGM_LIST = {
   lakeBattle: "audio/lake_battle.mp3",
   lakeBoss: "audio/lake_boss.mp3",
   levelup: "audio/levelup.mp3",
-  bossClear: "audio/boss_clear.mp3"
+  bossClear: "audio/boss_clear.mp3",
+  volcanoBattle: "audio/volcano_battle.mp3",
+  volcanoBoss: "audio/volcano_boss.mp3", 
 };
 
 let currentBgmKey = null;
@@ -46,12 +48,24 @@ function getBgmKeyForScreen(screenId) {
    　case "training-monster-screen": return "trainingMonster";
      case "levelup-screen": return "levelup";   
     case "forest-screen": return "forest";
-    case "lake-screen": return "lake";
-    case "battle-screen":
-  if (currentAdventureStage === "lake") {
-    return currentBattleNumber === 6 ? "lakeBoss" : "lakeBattle";
-  }
-  return currentBattleNumber === 6 ? "forestBoss" : "forestBattle";
+   case "lake-screen": return "lakeBattle";
+   case "volcano-screen": return "volcanoBattle";     
+   case "battle-screen":
+      if (currentAdventureStage === "lake") {
+        return currentBattleNumber === 6
+          ? "lakeBoss"
+          : "lakeBattle";
+      }
+
+      if (currentAdventureStage === "volcano") {
+        return currentBattleNumber === 6
+          ? "volcanoBoss"
+          : "volcanoBattle";
+      }
+
+      return currentBattleNumber === 6
+        ? "forestBoss"
+        : "forestBattle";
 
 case "battle-result-screen":
   return null;
@@ -305,64 +319,6 @@ const monsters = [
   }
 ];
 
-/* =========================================================
-   はじまりの森の敵
-   ========================================================= */
-
-const forestEnemies = [
-  {
-    name: "ノラスライム",
-    image: "images/yasei_slime.png",
-    level: 1,
-    hp: 30,
-    attack: 5
-  },
-
-  {
-    name: "ドクキノコン",
-    image: "images/warukinoko.png",
-    level: 2,
-    hp: 42,
-    attack: 6
-  },
-
-  {
-    name: "オバケバーナ",
-    image: "images/obakebana.png",
-    level: 3,
-    hp: 55,
-    attack: 7
-  },
-
-  {
-    name: "ゴブリーダー",
-    image: "images/goburin_rida.png",
-    level: 4,
-    hp: 70,
-    attack: 8
-  },
-
-  {
-    name: "ジュモーク",
-    image: "images/uddora.png",
-    level: 5,
-    hp: 70,
-    attack: 9
-  }
-];
-
-/* =========================================================
-   はじまりの森 ボス
-   ========================================================= */
-
-const forestBoss = {
-  name: "森の王ナックルベア",
-  image: "images/morinosyugosya.png",
-  level: 7,
-  hp: 100,
-  attack: 10
-};
-
 
 /* =========================================================
    ゲームデータ
@@ -405,24 +361,24 @@ let levelupMonsterId = null;
 
 const adventureStages = {
   forest: {
-    id: "forest",
-    name: "はじまりの森",
-    progress: 0,
-    currentHP: 0,
-    battleMonsterId: null,
-    questionMin: 1,
-    questionMax: 3,
-   enemies: [
-      { name: "ノラスライム", image: "images/yasei_slime.png", level: 1, hp: 12, attack: 4 },
-      { name: "ドクキノコン", image: "images/warukinoko.png", level: 2, hp: 18, attack: 6 },
-      { name: "オバケバーナ", image: "images/obakebana.png", level: 3, hp: 24, attack: 7 },
-      { name: "ゴブリーダー", image: "images/goburin_rida.png", level: 4, hp: 30, attack: 9 },
-      { name: "ジュモーク", image: "images/uddora.png", level: 5, hp: 38, attack: 8 }
-    ],
-    boss: { name: "森の王ナックルベア", image: "images/morinosyugosya.png", level: 7, hp: 55, attack: 11 }
-  },
+  id: "forest",
+  name: "はじまりの森",
+  progress: 0,
+  currentHP: 0,
+  battleMonsterId: null,
+  questionMin: 1,
+  questionMax: 3,
+  enemies: [
+    { name: "ノラスライム", image: "images/yasei_slime.png", level: 1, hp: 30, attack: 5 },
+    { name: "ドクキノコン", image: "images/warukinoko.png", level: 2, hp: 42, attack: 7 },
+    { name: "オバケバーナ", image: "images/obakebana.png", level: 3, hp: 55, attack: 8 },
+    { name: "ゴブリーダー", image: "images/goburin_rida.png", level: 4, hp: 70, attack: 10 },
+    { name: "ジュモーク", image: "images/uddora.png", level: 5, hp: 70, attack: 10 }
+  ],
+  boss: { name: "森の王ナックルベア", image: "images/morinosyugosya.png", level: 7, hp: 100, attack: 12 }
+},
 
-  lake: {
+ lake: {
     id: "lake",
     name: "九九の湖",
     progress: 0,
@@ -431,12 +387,31 @@ const adventureStages = {
     questionMin: 3,
     questionMax: 5,
     enemies: [
-      { name: "あわモン", image: null, level: 3, hp: 27, attack: 8 },
-      { name: "ウォータースライム", image: null, level: 4, hp: 32, attack: 10 },
-      { name: "ツノザカナ", image: null, level: 4, hp: 36, attack: 12 },
-      { name: "シンカイモン", image: null, level: 5, hp: 42, attack: 14 }
+      { name: "アワモン", image: "images/awamon.png", level: 2, hp: 42, attack: 7 },
+      { name: "ウォータースライム", image: "images/waterslime.png", level: 3, hp: 55, attack: 8 },
+      { name: "トゲフィッシュ", image: "images/togefish.png", level: 4, hp: 70, attack: 10 },
+      { name: "レイクシェル", image: "images/lakeshell.png", level: 5, hp: 70, attack: 10 },
+      { name: "アクアゾンビ", image: "images/aquazombie.png", level: 6, hp: 100, attack: 12 }
     ],
-    boss: { name: "湖底の主", image: null, level: 7, hp: 65, attack: 17 }
+    boss: { name: "湖底の主 ククッシー", image: "images/kukusshii.png", level: 7, hp: 130, attack: 14 }
+  },
+
+  volcano: {
+    id: "volcano",
+    name: "炎のカッケ山",
+    progress: 0,
+    currentHP: 0,
+    battleMonsterId: null,
+    questionMin: 5,
+    questionMax: 7,
+    enemies: [
+      { name: "ボウボウ", image: "images/boubou.png", level: 3, hp: 55, attack: 8 },
+      { name: "マグマスライム", image: "images/magumaslime.png", level: 4, hp: 70, attack: 10 },
+      { name: "ベビーデビル", image: "images/babydevil.png", level: 5, hp: 80, attack: 11 },
+      { name: "モクモク魔神", image: "images/mokumokumajin.png", level: 6, hp: 100, attack: 12 },
+      { name: "カエルナイト", image: "images/kaerunaito.png", level: 7, hp: 110, attack: 14 }
+    ],
+    boss: { name: "ボルケーノゴーレム", image: "images/volcanogolem.png", level: 9, hp: 150, attack: 16 }
   }
 };
 
@@ -448,7 +423,42 @@ let lakeProgress = 0;
 let lakeCurrentHP = 0;
 let lakeBattleMonsterId = null;
 
+let volcanoProgress = 0;
+let volcanoCurrentHP = 0;
+let volcanoBattleMonsterId = null;
+
 let currentAdventureStage = "forest";
+
+// 敵図鑑データ
+let enemyDex = {
+  forest: {},
+  lake: {},
+  volcano: {}
+};
+
+// 敵図鑑に討伐記録を登録
+function registerEnemyDefeat() {
+  const stage = currentAdventureStage;
+  const enemy = currentWildMonster;
+
+  if (!enemy || !enemy.name) return;
+
+  if (!enemyDex[stage]) {
+    enemyDex[stage] = {};
+  }
+
+  const enemyName = enemy.name;
+
+  if (!enemyDex[stage][enemyName]) {
+    enemyDex[stage][enemyName] = {
+      discovered: true,
+      defeats: 0
+    };
+  }
+
+  enemyDex[stage][enemyName].discovered = true;
+  enemyDex[stage][enemyName].defeats++;
+}
 
 /* =========================================================
    バトル状態
@@ -490,10 +500,14 @@ function syncAdventureState(stageId = currentAdventureStage) {
     stage.progress = forestProgress;
     stage.currentHP = forestCurrentHP;
     stage.battleMonsterId = forestBattleMonsterId;
-  } else {
+  } else if (stageId === "lake") {
     stage.progress = lakeProgress;
     stage.currentHP = lakeCurrentHP;
     stage.battleMonsterId = lakeBattleMonsterId;
+  } else if (stageId === "volcano") {
+    stage.progress = volcanoProgress;
+    stage.currentHP = volcanoCurrentHP;
+    stage.battleMonsterId = volcanoBattleMonsterId;
   }
   return stage;
 }
@@ -714,6 +728,7 @@ function saveGame() {
 
   syncAdventureState("forest");
   syncAdventureState("lake");
+  syncAdventureState("volcano"); 
 
   const data = {
 
@@ -746,7 +761,12 @@ function saveGame() {
     forestBattleMonsterId,
     lakeProgress,
     lakeCurrentHP,
-    lakeBattleMonsterId
+    lakeBattleMonsterId,
+　　volcanoProgress,
+　　volcanoCurrentHP,
+　　volcanoBattleMonsterId,
+    enemyDex: { ...enemyDex } 
+     
   };
 
 
@@ -891,7 +911,7 @@ function loadGame() {
         : null;
 
     lakeProgress =
-      Math.max(0, Math.min(5, Number(data.lakeProgress) || 0));
+      Math.max(0, Math.min(6, Number(data.lakeProgress) || 0));
 
     lakeCurrentHP =
       Number(data.lakeCurrentHP) || 0;
@@ -901,6 +921,27 @@ function loadGame() {
         ? Number(data.lakeBattleMonsterId)
         : null;
 
+volcanoProgress =
+      Math.max(0, Math.min(6, Number(data.volcanoProgress) || 0));
+
+    volcanoCurrentHP =
+      Number(data.volcanoCurrentHP) || 0;
+
+    volcanoBattleMonsterId =
+      data.volcanoBattleMonsterId
+        ? Number(data.volcanoBattleMonsterId)
+        : null;
+    if (
+      data.enemyDex &&
+      typeof data.enemyDex === "object"
+    ) {
+      enemyDex = {
+        forest: data.enemyDex.forest || {},
+        lake: data.enemyDex.lake || {},
+        volcano: data.enemyDex.volcano || {}
+      };
+    } 
+     
   }
 
   catch (error) {
@@ -1855,14 +1896,12 @@ function finishTraining() {
   );
 
   /*
-     新しいモンスターをGETしたとき
-     レベルアップ曲を再生
+     修行合格時は毎回クリアファンファーレを再生
   */
 
-  if (rewardIsNew) {
-  playOneShotBgm("levelup");
-}
-
+  if (correctCount >= 8) {
+    playBattleClearFanfare();
+  }
 }
 
 /* =========================================================
@@ -3253,10 +3292,32 @@ function updateLakeAreaAvailability() {
   }
 }
 
+function updateVolcanoAreaAvailability() {
+  const area = el("volcano-area");
+
+  if (!area) {
+    return;
+  }
+
+  const unlocked = isLakeCleared();
+
+  area.disabled = !unlocked;
+  area.classList.toggle("locked-area", !unlocked);
+
+  const small = area.querySelector("small");
+
+  if (small) {
+    small.textContent = unlocked
+      ? "山へ挑戦する！"
+      : "九九の湖クリアで解放";
+  }
+}
+
 function openWorld() {
 
   updateWorldStats();
   updateLakeAreaAvailability();
+  updateVolcanoAreaAvailability(); 
   updateLakeMap();
 
   showScreen(
@@ -3588,14 +3649,13 @@ function startForestBattle(
 if (number === 6) {
 
   currentWildMonster = {
-    ...forestBoss,
-    hp: forestBoss.hp
+    ...adventureStages.forest.boss
   };
 
 } else {
 
   const base =
-    forestEnemies[number - 1];
+  adventureStages.forest.enemies[number - 1];
 
   currentWildMonster = {
     ...base,
@@ -3659,31 +3719,28 @@ function playBossEntrance() {
   const target =
     enemyImage.querySelector("img") || enemyImage;
 
-  target.animate(
+ target.animate(
   [
-  { opacity: 0, transform: "translateY(220px) translateX(0) rotate(0deg)" },
-  { opacity: 1, transform: "translateY(205px) translateX(-3px) rotate(-0.4deg)" },
-  { opacity: 1, transform: "translateY(190px) translateX(3px) rotate(0.4deg)" },
-  { opacity: 1, transform: "translateY(175px) translateX(-3px) rotate(-0.4deg)" },
-  { opacity: 1, transform: "translateY(160px) translateX(3px) rotate(0.4deg)" },
-  { opacity: 1, transform: "translateY(145px) translateX(-3px) rotate(-0.4deg)" },
-  { opacity: 1, transform: "translateY(130px) translateX(3px) rotate(0.4deg)" },
-  { opacity: 1, transform: "translateY(115px) translateX(-3px) rotate(-0.4deg)" },
-  { opacity: 1, transform: "translateY(100px) translateX(3px) rotate(0.4deg)" },
-  { opacity: 1, transform: "translateY(85px) translateX(-2px) rotate(-0.3deg)" },
-  { opacity: 1, transform: "translateY(70px) translateX(2px) rotate(0.3deg)" },
-  { opacity: 1, transform: "translateY(55px) translateX(-2px) rotate(-0.3deg)" },
-  { opacity: 1, transform: "translateY(40px) translateX(2px) rotate(0.3deg)" },
-  { opacity: 1, transform: "translateY(25px) translateX(-1px) rotate(-0.2deg)" },
-  { opacity: 1, transform: "translateY(10px) translateX(1px) rotate(0.2deg)" },
-  { opacity: 1, transform: "translateY(0) translateX(0) rotate(0deg)" }
-],
-    {
-      duration: 3000,
-      easing: "ease-out",
-      fill: "forwards"
-    }
-  );
+    { opacity: 0, transform: "translateY(200px) rotate(-1deg) scale(0.95)" },
+    { opacity: 0.4, transform: "translateY(160px) rotate(1deg) scale(0.96)" },
+    { opacity: 0.7, transform: "translateY(125px) rotate(-1.2deg) scale(0.97)" },
+    { opacity: 1, transform: "translateY(95px) rotate(1deg) scale(0.98)" },
+    { opacity: 1, transform: "translateY(75px) rotate(-1deg) scale(0.985)" },
+    { opacity: 1, transform: "translateY(60px) rotate(1.2deg) scale(0.99)" },
+    { opacity: 1, transform: "translateY(45px) rotate(-1.2deg) scale(0.995)" },
+    { opacity: 1, transform: "translateY(32px) rotate(1deg) scale(1)" },
+    { opacity: 1, transform: "translateY(22px) rotate(-1.2deg) scale(1)" },
+    { opacity: 1, transform: "translateY(14px) rotate(1deg) scale(1)" },
+    { opacity: 1, transform: "translateY(8px) rotate(-0.8deg) scale(1)" },
+    { opacity: 1, transform: "translateY(3px) rotate(0.6deg) scale(1)" },
+    { opacity: 1, transform: "translateY(0) rotate(0deg) scale(1)" }
+  ],
+  {
+    duration: 3000,
+    easing: "ease-out",
+    fill: "forwards"
+  }
+);
 }
 
 function setupBattle() {
@@ -3917,38 +3974,47 @@ function setupBattle() {
   updateBattleHP();
 
 
-  const isLake =
-    currentAdventureStage === "lake";
+  const isVolcano =
+  currentAdventureStage === "volcano";
 
-  battleMessage(
-    currentBattleNumber === 6
-      ? (
-          isLake
+const isLake =
+  currentAdventureStage === "lake";
+
+battleMessage(
+  currentBattleNumber === 6
+    ? (
+        isVolcano
+          ? "⚠️ 火山のボスが現れた！"
+          : isLake
             ? "⚠️ 湖底の主が現れた！"
             : "⚠️ 森のボスが現れた！"
-        )
-      : `⚔️ バトル${currentBattleNumber}！九九で攻撃しよう！`
-  );
+      )
+    : `⚔️ バトル${currentBattleNumber}！九九で攻撃しよう！`
+);
 
-  const battleBackButton =
-    el("battle-back-button");
+const battleBackButton =
+  el("battle-back-button");
 
-  if (battleBackButton) {
-    battleBackButton.textContent =
-      isLake
+if (battleBackButton) {
+  battleBackButton.textContent =
+    isVolcano
+      ? "← カッケ山のマップへ"
+      : isLake
         ? "← 湖のマップへ"
         : "← 森のマップへ";
-  }
+}
 
-  const battleReturnButton =
-    el("battle-return-forest");
+const battleReturnButton =
+  el("battle-return-forest");
 
-  if (battleReturnButton) {
-    battleReturnButton.textContent =
-      isLake
+if (battleReturnButton) {
+  battleReturnButton.textContent =
+    isVolcano
+      ? "🌋 カッケ山のマップへ"
+      : isLake
         ? "🌊 湖のマップへ"
         : "🌳 森のマップへ";
-  }
+}
 
 
   /*
@@ -4591,6 +4657,8 @@ function battleWin() {
 
   battleWins++;
 
+  registerEnemyDefeat(); 
+
   battleExpReward =
     currentBattleNumber === 6
       ? 100
@@ -4718,18 +4786,23 @@ function battleWin() {
     el("battle-return-forest");
 
   if (returnButton) {
-    returnButton.textContent =
-      isLake
+  returnButton.textContent =
+    currentAdventureStage === "volcano"
+      ? "🌋 カッケ山のマップへ"
+      : isLake
         ? "🌊 湖のマップへ"
         : "🌳 森のマップへ";
-  }
+}
 
-  if (isLake) {
-    updateLakeMap();
-  }
-  else {
-    updateForestMap();
-  }
+  if (currentAdventureStage === "volcano") {
+  updateVolcanoMap();
+}
+else if (isLake) {
+  updateLakeMap();
+}
+else {
+  updateForestMap();
+}
 
   updateWorldStats();
 
@@ -4739,10 +4812,12 @@ function battleWin() {
     "battle-result-screen"
   );
 
-  if (currentBattleNumber === 6) {
+ if (currentBattleNumber === 6) {
   playBossClearFanfare();
-} 
-
+} else {
+  playBattleClearFanfare();
+}
+   
   if (leveledUp) {
     setTimeout(
       () => {
@@ -4782,6 +4857,19 @@ function playBossClearFanfare() {
       updateBgmForScreen(returnScreen);
     }
   };
+
+  opBgm.play().catch(() => {});
+}
+
+function playBattleClearFanfare() {
+  const opBgm = document.getElementById("op-bgm");
+  if (!opBgm || !bgmEnabled) return;
+
+  opBgm.onended = null;
+  opBgm.src = "audio/battle_clear.mp3";
+  opBgm.currentTime = 0;
+  opBgm.volume = 0.2;
+  opBgm.loop = false;
 
   opBgm.play().catch(() => {});
 }
@@ -4872,11 +4960,6 @@ function battleLose() {
   );
 }
 
-
-/* =========================================================
-   次のバトル
-
-
 /* =========================================================
    次のバトル
    ========================================================= */
@@ -4886,6 +4969,9 @@ function nextBattle() {
   const isLake =
     currentAdventureStage === "lake";
 
+  const isVolcano =
+    currentAdventureStage === "volcano";
+
   /*
      敗北後は、そのステージの①から再挑戦。
   */
@@ -4893,7 +4979,14 @@ function nextBattle() {
     battlePlayerHP <= 0
   ) {
 
-    if (isLake) {
+    if (isVolcano) {
+      volcanoProgress = 0;
+      volcanoCurrentHP = 0;
+      volcanoBattleMonsterId = null;
+      saveGame();
+      startVolcanoBattle(1);
+    }
+    else if (isLake) {
       lakeProgress = 0;
       lakeCurrentHP = 0;
       lakeBattleMonsterId = null;
@@ -4918,14 +5011,21 @@ function nextBattle() {
     currentBattleNumber === 6
   ) {
 
-    if (isLake) {
-      lakeCurrentHP = 0;
-      lakeBattleMonsterId = null;
-    }
-    else {
-      forestCurrentHP = 0;
-      forestBattleMonsterId = null;
-    }
+    if (isVolcano) {
+  volcanoProgress = 6;
+  volcanoCurrentHP = 0;
+  volcanoBattleMonsterId = null;
+}
+else if (isLake) {
+  lakeProgress = 6;
+  lakeCurrentHP = 0;
+  lakeBattleMonsterId = null;
+}
+else {
+  forestProgress = 6;
+  forestCurrentHP = 0;
+  forestBattleMonsterId = null;
+}
 
     saveGame();
     openWorld();
@@ -4937,10 +5037,31 @@ function nextBattle() {
     currentBattleNumber + 1;
 
   /*
-     今のバトル終了時HPを必ず保存してから
+     今のバトル終了時HPを保存してから
      次のバトルを開始する。
   */
-  if (isLake) {
+
+  if (isVolcano) {
+
+    volcanoCurrentHP =
+      battlePlayerHP;
+
+    volcanoBattleMonsterId =
+      Number(selectedMonsterId);
+
+    volcanoProgress =
+      Math.max(
+        volcanoProgress,
+        currentBattleNumber
+      );
+
+    saveAdventureStage("volcano");
+    saveGame();
+
+    startVolcanoBattle(next);
+
+  }
+  else if (isLake) {
 
     lakeCurrentHP =
       battlePlayerHP;
@@ -4948,11 +5069,6 @@ function nextBattle() {
     lakeBattleMonsterId =
       Number(selectedMonsterId);
 
-    /*
-       現在のバトルは勝利済みなので、
-       次の番号をそのまま開始する。
-       進行度の判定に依存しない。
-    */
     lakeProgress =
       Math.max(
         lakeProgress,
@@ -4985,13 +5101,6 @@ function nextBattle() {
     startForestBattle(next);
   }
 }
-
-
-/* =========================================================
-   森へ戻る
-
-
-
 
 /* =========================================================
    森へ戻る
@@ -5066,60 +5175,41 @@ function battleReturnAdventure() {
 function battleBackAdventure() {
 
   if (battleTimer) {
-
-    clearTimeout(
-      battleTimer
-    );
-
-    battleTimer =
-      null;
-
+    clearTimeout(battleTimer);
+    battleTimer = null;
   }
 
+  battleAnswering = false;
 
-  battleAnswering =
-    false;
+  if (battlePlayerMaxHP > 0) {
 
-
-  if (
-    battlePlayerMaxHP > 0
-  ) {
-
-    if (
-      currentAdventureStage === "lake"
-    ) {
-      lakeCurrentHP =
-        battlePlayerHP;
+    if (currentAdventureStage === "volcano") {
+      volcanoCurrentHP = battlePlayerHP;
+    }
+    else if (currentAdventureStage === "lake") {
+      lakeCurrentHP = battlePlayerHP;
     }
     else {
-      forestCurrentHP =
-        battlePlayerHP;
+      forestCurrentHP = battlePlayerHP;
     }
 
   }
-
 
   saveGame();
 
-
-  if (
-    currentAdventureStage === "lake"
-  ) {
+  if (currentAdventureStage === "volcano") {
+    updateVolcanoMap();
+    showScreen("volcano-screen");
+  }
+  else if (currentAdventureStage === "lake") {
     updateLakeMap();
-
-    showScreen(
-      "lake-screen"
-    );
+    showScreen("lake-screen");
   }
   else {
     updateForestMap();
-
-    showScreen(
-      "forest-screen"
-    );
+    showScreen("forest-screen");
   }
 }
-
 
 /* =========================================================
    セーブデータリセット
@@ -5347,6 +5437,26 @@ function openLake() {
   showScreen("lake-screen");
 }
 
+/* 炎のカッケ山 */
+function openVolcano() {
+  if (!isLakeCleared()) {
+    alert("炎のカッケ山は、九九の湖をクリアすると解放されます！");
+    return;
+  }
+
+  if (caughtMonsters.length === 0) {
+    alert("冒険には仲間が必要です！\nまず修行してモンスターを仲間にしよう！");
+    return;
+  }
+
+  if (!selectedMonsterId || !caughtMonsters.includes(Number(selectedMonsterId))) {
+    selectedMonsterId = Number(caughtMonsters[0]);
+  }
+
+  updateVolcanoMap();
+  showScreen("volcano-screen");
+}
+
 function updateLakeMap() {
   const nodes = document.querySelectorAll(
     "#lake-screen .battle-node, #lake-screen .boss-node"
@@ -5373,31 +5483,25 @@ function updateLakeMap() {
   if (fill) fill.style.width = `${lakeProgress / 6 * 100}%`;
 
   const progress = el("lake-progress-text");
-  if (progress) progress.textContent = `${lakeProgress} / 6 バトルクリア`;
-}
+  if (progress) {
+    progress.textContent = `${lakeProgress} / 6 バトルクリア`;
+  }
 
-const goal =
-  document.querySelector(
+  // 湖クリア表示の更新
+  const goal = document.querySelector(
     "#lake-screen .goal-node"
   );
 
-if (goal) {
-  goal.classList.toggle(
-    "locked-node",
-    lakeProgress < 6
-  );
+  if (goal) {
+    const cleared = lakeProgress >= 6;
 
-  if (
-    lakeProgress >= 6
-  ) {
-    const icon =
-      goal.querySelector(
-        ".node-icon"
-      );
+    goal.classList.toggle("locked-node", !cleared);
+    goal.classList.toggle("cleared-node", cleared);
+
+    const icon = goal.querySelector(".node-icon");
 
     if (icon) {
-      icon.textContent =
-        "🏆";
+      icon.textContent = cleared ? "🏆" : "🔒";
     }
   }
 }
@@ -5487,28 +5591,13 @@ function startLakeBattle(battleNumber) {
   }
   else {
     const base =
-      adventureStages.lake.enemies[
-        Math.floor(
-          Math.random() *
-          adventureStages.lake.enemies.length
-        )
-      ];
+  adventureStages.lake.enemies[number - 1];
 
     currentWildMonster = {
-      ...base,
-
-      /*
-         後半ほど少しだけ強くする。
-         基本攻撃力は湖の設定値を使用。
-      */
-      hp:
-        base.hp +
-        (number - 1) * 2,
-
-      attack:
-        base.attack +
-        (number - 1)
-    };
+  ...base,
+  hp: base.hp,
+  attack: base.attack
+};
   }
 
   saveAdventureStage("lake");
@@ -5520,7 +5609,169 @@ function startLakeBattle(battleNumber) {
   );
 }
 
+/* =========================================================
+   炎のカッケ山：マップ更新
+   ========================================================= */
 
+function updateVolcanoMap() {
+  const nodes = document.querySelectorAll(
+    "#volcano-screen .battle-node, #volcano-screen .boss-node"
+  );
+
+  nodes.forEach(node => {
+    const number = Number(node.dataset.battle);
+    const unlocked = number === 1 || volcanoProgress >= number - 1;
+    const cleared = volcanoProgress >= number;
+
+    node.disabled = !unlocked;
+    node.classList.toggle("locked-node", !unlocked);
+    node.classList.toggle("cleared-node", cleared);
+
+    const icon = node.querySelector(".node-icon");
+    if (!icon) return;
+
+    if (cleared) icon.textContent = "⭐";
+    else if (number === 6) icon.textContent = unlocked ? "👑" : "🔒";
+    else icon.textContent = unlocked ? "⚔️" : "🔒";
+  });
+
+  const fill = el("volcano-progress-fill");
+  if (fill) fill.style.width = `${volcanoProgress / 6 * 100}%`;
+
+  const progress = el("volcano-progress-text");
+  if (progress) {
+    progress.textContent = `${volcanoProgress} / 6 バトルクリア`;
+  }
+
+  const goal = document.querySelector(
+    "#volcano-screen .goal-node"
+  );
+
+  if (goal) {
+    goal.classList.toggle(
+      "locked-node",
+      volcanoProgress < 6
+    );
+
+    const icon = goal.querySelector(".node-icon");
+    if (icon) {
+      icon.textContent = volcanoProgress >= 6 ? "🏆" : "🔒";
+    }
+  }
+}
+
+/* =========================================================
+   炎のカッケ山：バトル開始
+   ========================================================= */
+
+function startVolcanoBattle(battleNumber) {
+
+  const number =
+    Number(battleNumber);
+
+  if (
+    number < 1 ||
+    number > 6
+  ) {
+    return;
+  }
+
+  /*
+     前のバトルをクリアしていなければ開始不可
+  */
+  if (
+    number > 1 &&
+    volcanoProgress < number - 1
+  ) {
+    return;
+  }
+
+  /*
+     仲間モンスターの確認
+  */
+  if (
+    caughtMonsters.length === 0
+  ) {
+    openVolcano();
+    return;
+  }
+
+  if (
+    !selectedMonsterId ||
+    !caughtMonsters.includes(
+      Number(selectedMonsterId)
+    )
+  ) {
+    selectedMonsterId =
+      Number(caughtMonsters[0]);
+  }
+
+  const selectedId =
+    Number(selectedMonsterId);
+
+  const data =
+    getMonsterData(selectedId);
+
+  if (!data) {
+    return;
+  }
+
+  currentAdventureStage =
+    "volcano";
+
+  currentBattleNumber =
+    number;
+
+  const monsterChanged =
+    volcanoBattleMonsterId !==
+    selectedId;
+
+  /*
+     ①またはモンスター変更時は満タン。
+     ②～⑤は前戦のHPを持ち越す。
+  */
+  if (
+    number === 1 ||
+    monsterChanged ||
+    volcanoCurrentHP <= 0
+  ) {
+    volcanoCurrentHP =
+      data.hp;
+
+    volcanoBattleMonsterId =
+      selectedId;
+  }
+
+  /*
+     火山の敵を決定。
+     ⑥はボルケーノゴーレム。
+  */
+  if (
+    number === 6
+  ) {
+    currentWildMonster = {
+      ...adventureStages.volcano.boss
+    };
+  }
+  else {
+    const base =
+      adventureStages.volcano.enemies[number - 1];
+
+    currentWildMonster = {
+      ...base,
+      hp: base.hp,
+      attack: base.attack
+    };
+  }
+
+  saveAdventureStage("volcano");
+
+  setupBattle();
+
+  showScreen(
+    "battle-screen"
+  );
+}
 
 
 /* =========================================================
@@ -5666,6 +5917,12 @@ el("lake-area")?.addEventListener(
   openLake
 );
 
+/* ワールド → 火山 */
+el("volcano-area")?.addEventListener(
+  "click",
+  openVolcano
+);
+
 /* 湖のバトルノード */
 document
   .querySelectorAll(
@@ -5677,12 +5934,28 @@ document
     });
   });
 
+/* 火山のバトルノード */
+document
+  .querySelectorAll(
+    "#volcano-screen .battle-node, #volcano-screen .boss-node"
+  )
+  .forEach(node => {
+    node.addEventListener("click", () => {
+      startVolcanoBattle(Number(node.dataset.battle));
+    });
+  });
+
 /* 湖 → ワールド */
 el("lake-back-button")?.addEventListener(
   "click",
   openWorld
 );
 
+/* 火山 → ワールド */
+el("volcano-back-button")?.addEventListener(
+  "click",
+  openWorld
+);
 
 /* 森 → ワールド */
 
