@@ -44,42 +44,52 @@ button {
 ========================= */
 
 #title-screen {
+  position: relative;
   text-align: center;
 
-  background:
-    linear-gradient(
-      #bde9ff,
-      #eaffd8
-    );
+  background-image: url("images/title_bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
+/* タイトル全体 */
 .logo {
-  padding-top: 100px;
+  padding-top: 18px;
 }
 
+/* タイトルロゴ */
+.title-logo-image {
+  display: block;
+  width: min(88%, 420px);
+  height: auto;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+/* 勇者＋モンスター */
 .logo-monster {
-  font-size: 100px;
-
-  animation:
-    float 2s infinite ease-in-out;
+  position: absolute;
+  left: 50%;
+  bottom: 125px;
+  transform: translateX(-50%);
+  margin: 0;
+  z-index: 2;
 }
 
-.logo h1 {
-  margin: 15px 0;
+.logo-monster-image {
+  display: block;
+  width: 210px;
+  height: 210px;
+  object-fit: contain;
+  image-rendering: pixelated;
 
-  font-size: 42px;
-
-  color: #3b4cca;
-
-  text-shadow:
-    3px 3px white;
+  animation: float 2s infinite ease-in-out;
 }
-
-.logo p {
-  font-weight: bold;
-  color: #555;
-}
-
 
 /* =========================
    ボタン
@@ -142,17 +152,13 @@ button {
 }
 
 .small-button {
-  border: none;
-
-  background: #eef1ff;
-
-  padding: 8px 12px;
-
-  border-radius: 12px;
-
-  font-weight: bold;
-
-  cursor: pointer;
+    border: none;
+    background: #eef1ff;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
 .reset-button {
@@ -509,15 +515,7 @@ button {
 
 #result-screen {
   text-align: center;
-}
-
-.result-icon {
-  font-size: 100px;
-
-  margin-top: 40px;
-
-  animation:
-    float 2s infinite ease-in-out;
+  padding-top: 20px;
 }
 
 #result-title {
@@ -1141,6 +1139,29 @@ button {
     transform 0.15s;
 }
 
+/* 冒険マップ・画像バナー */
+.map-area.stage-banner {
+  padding: 0;
+  overflow: hidden;
+  min-height: 125px;
+  height: 125px;
+  border-radius: 25px;
+  background: none;
+}
+
+.stage-banner-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 25px;
+}
+
+/* 勇者の試練：解放前は非表示 */
+#trial-area[hidden] {
+  display: none !important;
+}
+
 .map-area:hover {
   transform: translateY(-3px);
 }
@@ -1179,19 +1200,51 @@ button {
   transform: none;
 }
 
+/* 未開放ステージのバナー */
+.stage-banner.locked-area {
+  position: relative;
+}
+
+/* 未開放時はバナーを暗くする */
+.stage-banner.locked-area .stage-banner-image {
+  filter: brightness(0.45);
+}
+
+/* 未開放バナー中央の鍵 */
+.stage-banner.locked-area::after {
+  content: "";
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 82px;
+  height: 82px;
+
+  background-image: url("images/lock.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  z-index: 10;
+
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.75));
+
+  pointer-events: none;
+}
 
 /* =========================
    はじまりの森
 ========================= */
 
 #forest-screen {
-  text-align: center;
+    text-align: center;
 
-  background:
-    linear-gradient(
-      #e5f8dd,
-      #f7ffe9
-    );
+    background-image: url("images/battle_forest.png");
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
 }
 
 .forest-header {
@@ -1724,14 +1777,60 @@ button {
 #battle-screen {
   padding: 12px;
 
-  background:
-    linear-gradient(
-      #d8f2ff 0%,
-      #eefaff 48%,
-      #f8fbff 100%
-    );
+  background-image: url("images/battle_forest.png");
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
 }
 
+/* 湖ステージ・スマホ背景位置 */
+#battle-screen.lake-battle {
+  background-position: center top;
+}
+
+/* 火山ステージ・スマホ背景位置 */
+#battle-screen.volcano-battle {
+  background-position: center -70px;
+}
+
+/* 魔王城ステージ・スマホ背景位置 */
+#battle-screen.castle-battle {
+  background-position: center -80px;
+}
+
+/* ククデス戦・スマホ背景位置 */
+#battle-screen.castle-boss-battle {
+  background-position: center -15px;
+}
+
+/* PC版バトル背景調整 */
+@media (min-width: 501px) {
+  #battle-screen {
+    background-size: 100% auto;
+    background-position: center -110px;
+  }
+
+  /* PC版・湖ステージ背景位置 */
+#battle-screen.lake-battle {
+  background-position: center -40px;
+}
+
+/* PC版・火山ステージ背景位置 */
+#battle-screen.volcano-battle {
+  background-position: center -210px;
+}
+
+/* PC版・魔王城ステージ背景位置 */
+#battle-screen.castle-battle {
+  background-position: center -180px;
+}
+
+/* PC版・ククデス戦背景位置 */
+#battle-screen.castle-boss-battle {
+  background-position: center -50px;
+}
+  
+}
 
 /* -------------------------
    バトルヘッダー
@@ -1739,20 +1838,43 @@ button {
 
 .battle-header {
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   gap: 8px;
-
   margin-bottom: 5px;
-
   font-size: 13px;
-
   font-weight: bold;
+
+  position: relative;
+  z-index: 10;
 }
 
+.infinite-corridor-header-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* 無限回廊：階層・最高到達階表示 */
+.infinite-corridor-floor-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#infinite-corridor-floor,
+#infinite-corridor-best-floor {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(20, 20, 40, 0.85);
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
 
 /* -------------------------
    敵エリア
@@ -1780,6 +1902,19 @@ button {
   color: #666;
 }
 
+/* 敵エリア・背景上の文字を見やすくする */
+.enemy-area .battle-name,
+.enemy-area .battle-level,
+.enemy-area .hp-label span,
+#enemy-hp-text {
+  color: #111;
+
+  text-shadow:
+    1px 1px 0 #fff,
+    -1px 1px 0 #fff,
+    1px -1px 0 #fff,
+    -1px -1px 0 #fff;
+}
 
 /* 敵モンスター */
 
@@ -3863,6 +3998,14 @@ position: relative;
     font-size: 26px !important;
   }
 
+.pc-button-text {
+  display: none !important;
+}
+
+.mobile-button-text {
+  display: inline !important;
+}
+  
 }
 /* =========================================================
    モンスター特訓 親レイアウト修正
@@ -4062,29 +4205,79 @@ position: relative;
 
 /* タイトル画面・メインメニューボタン */
 
-.main-menu-buttons {
+#title-screen .main-menu-buttons {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translateX(-50%);
+  z-index: 3;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 8px;
+
+  width: 94%;
+  margin: 0;
+}
+#title-screen .main-menu-buttons .main-button {
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  margin-top: 24px;
+  justify-content: center;
+
+  position: relative;
+
+  padding: 20px 3px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+
+  color: #fff2c4;
+
+  /* 木製RPGボタン画像 */
+  background-image: url("images/menu_wood.png");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: transparent;
+
+  /* PNG側に枠・金具があるのでCSSの枠は使わない */
+  border: none;
+  border-radius: 0;
+
+  /* 少しだけ画面から浮かせる */
+  box-shadow: 0 5px 5px rgba(0,0,0,0.35);
+
+  text-shadow:
+    2px 2px 0 #261205,
+    -1px -1px 0 #261205;
+
+  cursor: pointer;
 }
 
-.main-menu-buttons .main-button {
-  width: 90%;
-  max-width: 320px;
+#title-screen .main-menu-buttons .main-button:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
 }
 
-.main-menu-buttons .main-button {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 48px;
-  text-align: left;
-}
+#title-screen .main-menu-buttons .main-button small {
+  display: block;
+  margin: 3px 0 0;
+  font-size: 10px;
+  line-height: 1.2;
 
-.main-menu-buttons .main-button small {
-  margin-left: 8px;
+  color: #ffffff;
+  text-shadow:
+    1px 1px 0 #2b1608,
+    -1px -1px 0 #2b1608,
+    1px -1px 0 #2b1608,
+    -1px 1px 0 #2b1608;
 }
 
 /* =========================
@@ -4151,4 +4344,2009 @@ position: relative;
     3px 3px 0 #000;
 
   pointer-events: none;
+}
+
+/* =========================
+   ステージ選択画面・タイトルバナー
+========================= */
+
+.stage-title-area {
+  text-align: center;
+}
+
+/* PC版 */
+.stage-title-banner {
+    display: block;
+    width: 360px;
+    max-width: 90%;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* =========================
+   スマホ版：湖ステージレイアウト
+========================= */
+
+@media (max-width: 510px) {
+
+    /* バナー */
+   .stage-title-area {
+    width: 100%;
+    text-align: center;
+    transform: translateX(-45px);
+}
+
+    .stage-title-banner {
+        display: block;
+        width: min(520px, 82vw);
+        max-width: 100%;
+        height: auto;
+        margin: 75px auto 0;
+    }
+
+    /* 説明文 */
+    #lake-screen .forest-intro {
+        width: 100%;
+        margin: 18px auto 28px;
+        padding: 0 20px;
+        text-align: center;
+        background: none;
+        border: none;
+        border-radius: 0;
+        box-sizing: border-box;
+    }
+
+    #lake-screen .forest-intro p {
+        margin: 0;
+        color: #ffffff;
+        font-size: 14px;
+        line-height: 1.55;
+        text-shadow:
+            -1px -1px 0 #16324a,
+             1px -1px 0 #16324a,
+            -1px  1px 0 #16324a,
+             1px  1px 0 #16324a,
+             0 2px 3px rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* 湖ステージ：背景を少し暗くする */
+#lake-screen {
+    position: relative;
+}
+
+#lake-screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    z-index: 0;
+}
+
+#lake-screen > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* 湖ステージ：バナーを背景から浮かせる */
+#lake-screen .stage-title-banner {
+    filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.45));
+}
+
+/* PC版：湖ステージ説明文 */
+@media (min-width: 511px) {
+  #lake-screen .stage-title-area {
+    width: 100%;
+    text-align: center;
+    transform: translateX(-40px);
+}
+    #lake-screen .forest-intro {
+        width: 100%;
+        margin: 20px auto 28px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        text-align: center;
+        background: none;
+        border: none;
+    }
+
+    #lake-screen .forest-intro p {
+        margin: 0;
+        color: #ffffff;
+        font-size: 14px;
+        line-height: 1.55;
+        text-align: center;
+        text-shadow:
+            -1px -1px 0 #16324a,
+             1px -1px 0 #16324a,
+            -1px  1px 0 #16324a,
+             1px  1px 0 #16324a,
+             0 2px 3px rgba(0, 0, 0, 0.8);
+    }
+  #lake-screen #lake-back-button {
+    white-space: nowrap;
+}
+}
+
+/* 森ステージ：背景を少し暗くする */
+#forest-screen {
+    position: relative;
+}
+
+#forest-screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    z-index: 0;
+}
+
+#forest-screen > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* 森ステージ：説明文を白文字にする */
+#forest-screen .forest-intro p {
+    color: #ffffff;
+    text-shadow:
+        -1px -1px 0 #16324a,
+         1px -1px 0 #16324a,
+        -1px  1px 0 #16324a,
+         1px  1px 0 #16324a,
+         0 2px 3px rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 510px) {
+  #forest-screen .forest-intro {
+    width: 100%;
+    margin: 20px auto 28px;
+    padding: 0 20px;
+    box-sizing: border-box;
+    text-align: center;
+    background: none;
+    border: none;
+    border-radius: 0;
+  }
+}
+
+/* PC版：はじまりの森 バナー位置補正 */
+@media (min-width: 511px) {
+    #forest-screen .stage-title-area {
+        width: 100%;
+        text-align: center;
+      transform: translateX(-40px);
+      }
+}
+/* PC版：はじまりの森 説明文レイアウト */
+@media (min-width: 511px) {
+    #forest-screen .forest-intro {
+        width: 100%;
+        margin: 20px auto 28px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        text-align: center;
+        background: none;
+        border: none;
+    }
+}
+/* PC版：森のバトルカード位置調整 */
+@media (min-width: 511px) {
+    #forest-screen .forest-route {
+        padding-top: 20px;
+    }
+}
+/* PC版：森の説明文を湖と同じ高さに統一 */
+@media (min-width: 511px) {
+    #forest-screen .forest-intro p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.55;
+        text-align: center;
+    }
+}
+/* 炎のカッケ山：ステージ背景 */
+#volcano-screen {
+    text-align: center;
+    position: relative;
+    background-image: url("images/battle_volcano.png");
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+/* PC版：炎のカッケ山 レイアウト調整 */
+@media (min-width: 511px) {
+
+    /* バナーを森・湖と同じ位置へ */
+    #volcano-screen .stage-title-area {
+        width: 100%;
+        text-align: center;
+        transform: translateX(-40px);
+    }
+
+    /* 説明文を森・湖と同じレイアウトへ */
+    #volcano-screen .forest-intro {
+        width: 100%;
+        margin: 20px auto 28px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        text-align: center;
+        background: none;
+        border: none;
+    }
+
+    #volcano-screen .forest-intro p {
+        margin: 0;
+        color: #ffffff;
+        font-size: 14px;
+        line-height: 1.55;
+        text-align: center;
+        text-shadow:
+            -1px -1px 0 #16324a,
+             1px -1px 0 #16324a,
+            -1px  1px 0 #16324a,
+             1px  1px 0 #16324a,
+             0 2px 3px rgba(0, 0, 0, 0.8);
+    }
+}
+/* 炎のカッケ山：背景を暗くしてUIを見やすくする */
+#volcano-screen {
+    position: relative;
+}
+
+#volcano-screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    z-index: 0;
+}
+
+#volcano-screen > * {
+    position: relative;
+    z-index: 1;
+}
+/* スマホ版：炎のカッケ山 説明文 */
+@media (max-width: 510px) {
+    #volcano-screen .forest-intro {
+        width: 100%;
+        margin: 20px auto 28px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        text-align: center;
+        background: none;
+        border: none;
+    }
+
+    #volcano-screen .forest-intro p {
+        margin: 0;
+        color: #ffffff;
+        font-size: 14px;
+        line-height: 1.55;
+        text-align: center;
+        text-shadow:
+            -1px -1px 0 #16324a,
+             1px -1px 0 #16324a,
+            -1px  1px 0 #16324a,
+             1px  1px 0 #16324a,
+             0 2px 3px rgba(0, 0, 0, 0.8);
+    }
+}
+/* PC版：魔王城 バナー位置調整 */
+@media (min-width: 511px) {
+    #castle-screen .stage-title-area {
+        width: 100%;
+        text-align: center;
+        transform: translateX(-45px);
+    }
+}
+/* =========================================
+   魔王城：ステージ背景
+========================================= */
+#castle-screen {
+    text-align: center;
+    position: relative;
+    background-image: url("images/battle_castle.png");
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
+
+/* 背景を暗くしてUIを見やすくする */
+#castle-screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    z-index: 0;
+}
+
+#castle-screen > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* PC版：魔王城 説明文 */
+@media (min-width: 511px) {
+    #castle-screen .forest-intro {
+        width: 100%;
+        margin: 20px auto 28px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        text-align: center;
+        background: none;
+        border: none;
+    }
+
+    #castle-screen .forest-intro p {
+        margin: 0;
+        color: #ffffff;
+        font-size: 14px;
+        line-height: 1.55;
+        text-align: center;
+        text-shadow:
+            -1px -1px 0 #16324a,
+             1px -1px 0 #16324a,
+            -1px  1px 0 #16324a,
+             1px  1px 0 #16324a,
+             0 2px 3px rgba(0, 0, 0, 0.8);
+    }
+}
+/* 魔王城：背景フィルター */
+#castle-screen {
+    position: relative;
+}
+
+#castle-screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+    z-index: 0;
+}
+
+#castle-screen > * {
+    position: relative;
+    z-index: 1;
+}
+/* スマホ版：魔王城 説明文 */
+@media (max-width: 510px) {
+    #castle-screen .forest-intro {
+        width: 100%;
+        margin: 20px auto 28px;
+        padding: 0 20px;
+        box-sizing: border-box;
+        text-align: center;
+        background: none;
+        border: none;
+    }
+
+    #castle-screen .forest-intro p {
+        margin: 0;
+        color: #ffffff;
+        font-size: 14px;
+        line-height: 1.55;
+        text-align: center;
+        text-shadow:
+            -1px -1px 0 #16324a,
+             1px -1px 0 #16324a,
+            -1px  1px 0 #16324a,
+             1px  1px 0 #16324a,
+             0 2px 3px rgba(0, 0, 0, 0.8);
+    }
+}
+/* =========================================
+   モンスター図鑑：切り替えタブ
+========================================= */
+
+.book-tabs {
+    display: flex;
+    width: 100%;
+    max-width: 420px;
+    margin: 22px auto 14px;
+    padding: 4px;
+    box-sizing: border-box;
+    background: #e9edf5;
+    border-radius: 14px;
+    gap: 4px;
+}
+
+.book-tab {
+    flex: 1;
+    padding: 11px 8px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #6b7280;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+/* 選択中 */
+.book-tab.active {
+    background: #ffffff;
+    color: #222222;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+/* =========================================
+   下部メニュー：4ボタン均等配置
+========================================= */
+
+#menu.menu:not(.hidden) {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 8px;
+}
+
+#menu.menu:not(.hidden) button {
+    flex: 1 1 0;
+    min-width: 0;
+    box-sizing: border-box;
+}
+/* 下部メニュー：専用ドットアイコン */
+#menu .menu-icon {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    display: block;
+    margin: 0 auto -4px;
+}
+/* =========================================
+   魔王ククデス 最後のセリフ
+========================================= */
+
+#enemy-image {
+    position: relative;
+}
+
+.kukudes-last-message {
+    display: none;
+
+    position: absolute;
+    left: 50%;
+    top: 15%;
+  bottom: auto;
+    transform: translate(-50%, -50%);
+
+    width: max-content;
+    max-width: 90vw;
+
+    color: #ff3030;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1.5;
+    text-align: center;
+    white-space: nowrap;
+
+    text-shadow:
+        -2px -2px 0 #000,
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+         0    2px 0 #000;
+
+    z-index: 20;
+    pointer-events: none;
+}
+
+/* 敵画像と最後のセリフをまとめる */
+.battle-enemy-wrapper {
+    position: relative;
+    height: 115px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* ========================================
+   エンディング専用画面
+======================================== */
+
+#ending-screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 100dvh;
+    background: #000;
+    color: #fff;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* エンディングメッセージ */
+
+#ending-message-area {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+#ending-message {
+    color: #fff;
+    font-size: clamp(17px, 4.5vw, 24px);
+    font-weight: bold;
+    line-height: 2.2;
+    white-space: pre-line;
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+}
+
+/* スタッフロール表示領域 */
+
+#ending-credits-area {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    display: none;
+}
+
+#ending-credits {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 20px 60px;
+    color: #fff;
+    text-align: center;
+    animation: endingCreditsScroll 95s linear forwards;
+    animation-play-state: paused;
+}
+
+#ending-credits h2 {
+    font-size: 26px;
+    margin: 0 0 80px;
+    letter-spacing: 2px;
+}
+
+#ending-credits p {
+    font-size: 15px;
+    line-height: 2;
+    margin: 0 0 65px;
+}
+
+#ending-credits strong {
+    font-size: 23px;
+    font-weight: bold;
+}
+
+#ending-credits small {
+    font-size: 12px;
+    color: #aaa;
+}
+
+#ending-credits .ending-special-thanks {
+    margin-top: 90px;
+    margin-bottom: 80px;
+}
+
+@keyframes endingCreditsScroll {
+    from {
+        transform: translateY(0);
+    }
+    to {
+        transform: translateY(calc(-100% - 100dvh));
+    }
+}
+
+/* THE END */
+
+#ending-the-end {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: bold;
+    letter-spacing: 5px;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 3s ease-in-out;
+}
+/* ========================================
+   エンディング移行時の暗転
+======================================== */
+
+#ending-fade-overlay {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 99999;
+    transition: opacity 2s ease-in-out;
+}
+
+#ending-fade-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 勇者の試練：PC版のみ中央配置 */
+@media screen and (min-width: 769px) {
+  #trial-area {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc((100% - 12px) / 2);
+  }
+}
+
+
+/* 無限回廊：解放前は非表示 */
+#infinite-corridor-area[hidden] {
+  display: none !important;
+}
+#infinite-corridor-titles-button[hidden] {
+    display: none !important;
+}
+
+/* 無限回廊：PC版も中央配置 */
+@media screen and (min-width: 769px) {
+  #infinite-corridor-area {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc((100% - 12px) / 2);
+  }
+}
+
+/* =========================================
+   勇者の試練：専用バトル背景
+========================================= */
+
+/* 勇者の試練：PC版バトル背景 */
+#trial-battle-screen {
+    background-image: url("images/battle_trial99.png");
+    background-size: 110% auto;
+    background-position: center -30px;
+    background-repeat: no-repeat;
+}
+/* 勇者の試練：スマホ版バトル背景 */
+@media (max-width: 510px) {
+    #trial-battle-screen {
+        background-size: 130% auto;
+        background-position: center top;
+    }
+}
+
+/* =========================================
+   無限回廊：専用バトル背景
+========================================= */
+
+/* PC版 */
+#infinite-corridor-battle-screen {
+    background-image: url("images/infinite_corridor_battle.png");
+    background-size: 110% auto;
+    background-position: center -30px;
+    background-repeat: no-repeat;
+}
+
+/* スマホ版 */
+@media (max-width: 510px) {
+    #infinite-corridor-battle-screen {
+        background-size: 130% auto;
+        background-position: center top;
+    }
+}
+
+/* =========================================
+   無限回廊：敵モンスター配置
+========================================= */
+
+#infinite-corridor-battle-screen .enemy-area {
+    position: absolute;
+    top: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    padding: 0;
+    z-index: 2;
+}
+
+/* 敵の名前と画像 */
+#infinite-corridor-enemy-name {
+    position: relative;
+    top: -60px;
+}
+
+#infinite-corridor-enemy-image {
+    position: relative;
+    top: -20px;
+    overflow: visible;
+}
+
+#infinite-corridor-enemy-image img {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+/* バトルメッセージ */
+#infinite-corridor-battle-screen
+#infinite-corridor-battle-message {
+    position: relative;
+    margin-top: 230px;
+    z-index: 3;
+}
+
+/* スマホ版 */
+@media (max-width: 510px) {
+
+    #infinite-corridor-enemy-name {
+        top: -45px;
+    }
+
+    #infinite-corridor-enemy-image {
+        top: -30px;
+    }
+
+    #infinite-corridor-battle-screen
+#infinite-corridor-battle-message {
+    margin-top: 185px;
+    position: relative;
+    top: -10px;
+}
+
+    .infinite-corridor-status {
+    position: relative;
+    justify-content: flex-end;
+    margin-top: -100px;
+    margin-bottom: 20px;
+    z-index: 10;
+}
+#infinite-corridor-battle-screen .player-battle {
+    margin-top: 65px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+}
+  
+}
+
+/* =========================================
+   勇者の試練：敵モンスター配置
+========================================= */
+
+#trial-battle-screen .enemy-area {
+    position: absolute;
+    top: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    padding: 0;
+    z-index: 2;
+}
+
+/* 敵の名前と画像だけを上に移動 */
+#trial-enemy-name,
+#trial-enemy-image {
+    position: relative;
+    top: -35px;
+}
+
+#trial-enemy-image img {
+    width: 140px;
+    height: 140px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+/* =========================================
+   勇者の試練：敵モンスター名の位置調整
+========================================= */
+
+#trial-battle-screen #trial-enemy-name {
+    position: relative;
+    top: -60px;
+}
+
+/* =========================================
+   勇者の試練：敵モンスター画像の位置調整
+========================================= */
+
+#trial-battle-screen #trial-enemy-image {
+    position: relative;
+    top: -20px;
+}
+
+/* =========================================
+   勇者の試練：スマホ版の敵位置調整
+========================================= */
+
+@media (max-width: 510px) {
+
+    /* モンスター名を少し下げる */
+    #trial-battle-screen #trial-enemy-name {
+        top: -45px;
+    }
+
+    /* モンスター画像を少し上げる */
+    #trial-battle-screen #trial-enemy-image {
+        top: -30px;
+    }
+
+}
+
+/* =========================================
+   勇者の試練：メッセージウィンドウの配置
+========================================= */
+
+#trial-battle-screen #trial-battle-message {
+    position: relative;
+    margin-top: 230px;
+    z-index: 3;
+}
+/* =========================================
+   勇者の試練：敵ライフ（ハート表示）
+========================================= */
+
+#trial-battle-screen #trial-enemy-hearts {
+    position: absolute;
+    top: 90%;
+    left: 50%;
+    transform: translateX(-50%);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+
+    margin: 0;
+    width: max-content;
+
+    color: #ff2020;
+    font-size: 28px;
+    line-height: 1;
+
+    z-index: 5;
+}
+
+#trial-battle-screen #trial-enemy-hearts span {
+    color: #ff2020;
+    font-size: inherit;
+    text-shadow:
+        -1px -1px 0 #000,
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000,
+         0px -2px 0 #000,
+         0px  2px 0 #000,
+        -2px  0px 0 #000,
+         2px  0px 0 #000;
+}
+/* 勇者の試練：スマホ版の敵画像の切れ対策 */
+@media (max-width: 510px) {
+    #trial-battle-screen #trial-enemy-image {
+        overflow: visible;
+    }
+}
+
+/* =========================================
+   勇者の試練：スマホ版ウィンドウ位置調整
+========================================= */
+
+@media (max-width: 510px) {
+
+    #trial-battle-screen #trial-battle-message {
+        margin-top: 40px;
+    }
+
+}
+/* ========================================
+   勇者の試練：モンスター撃破・登場演出
+======================================== */
+
+/* 撃破：点滅しながら消える */
+#trial-enemy-image img.trial-defeat-animation {
+  animation: trialMonsterDefeat 0.8s ease-in forwards;
+}
+
+/* 登場：ふわっと姿を現す */
+#trial-enemy-image img.trial-appear-animation {
+  animation: trialMonsterAppear 0.8s ease-out forwards;
+}
+
+/* 撃破アニメーション */
+@keyframes trialMonsterDefeat {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+
+  15%, 45%, 75% {
+    opacity: 0.2;
+    filter: brightness(3);
+  }
+
+  30%, 60% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+
+  100% {
+    opacity: 0;
+    filter: brightness(3);
+  }
+}
+
+/* 登場アニメーション */
+@keyframes trialMonsterAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ========================================
+   勇者の試練：ゲームオーバー画面
+======================================== */
+
+#trial-gameover-screen {
+  text-align: center;
+}
+
+/* ========================================
+   勇者の試練：ゲームオーバー画像
+======================================== */
+
+#trial-gameover-screen .trial-gameover-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin: 20px auto 25px;
+}
+
+#trial-gameover-screen .trial-gameover-image img {
+  display: block;
+
+  width: 200px;
+  max-width: 80%;
+  height: auto;
+
+  image-rendering: pixelated;
+}
+
+/* ========================================
+   勇者の試練：ネオククデス専用登場演出
+======================================== */
+
+#trial-enemy-image img.trial-neo-appear-animation {
+  animation: trialNeoAppear 2s ease-out forwards;
+  transform-origin: center center;
+}
+
+@keyframes trialNeoAppear {
+
+  0%, 12%, 24%, 36%, 48% {
+    opacity: 0;
+    filter: brightness(0)
+      drop-shadow(0 0 12px #6677ff);
+  }
+
+  17%, 29%, 41% {
+    opacity: 1;
+    filter: brightness(0)
+      drop-shadow(0 0 20px #8c8cff);
+  }
+
+  55% {
+    opacity: 1;
+    filter: brightness(5)
+      drop-shadow(0 0 30px #aaaaff);
+  }
+
+  70% {
+    opacity: 1;
+    filter: brightness(2);
+  }
+
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+
+}
+
+/* ========================================
+   勇者の試練：魔獣ククデーモン専用登場演出
+======================================== */
+
+#trial-enemy-image img.trial-demon-appear-animation {
+  animation: trialDemonAppear 3s ease-out forwards;
+  transform-origin: center center;
+}
+
+@keyframes trialDemonAppear {
+
+  /* 完全な暗闇 */
+  0% {
+    opacity: 0;
+    transform: scale(1.35);
+    filter: brightness(0);
+  }
+
+  /* 黒いシルエットが浮かび上がる */
+  25% {
+    opacity: 0.7;
+    transform: scale(1.3);
+    filter:
+      brightness(0)
+      drop-shadow(0 0 12px #660000);
+  }
+
+  /* 赤黒いオーラをまとう */
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+    filter:
+      brightness(0.15)
+      drop-shadow(0 0 25px #cc0033);
+  }
+
+  /* 徐々に実体化 */
+  75% {
+    opacity: 1;
+    transform: scale(1.08);
+    filter:
+      brightness(0.6)
+      drop-shadow(0 0 18px #ff2244);
+  }
+
+  /* 完全降臨 */
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+/* ========================================
+   勇者の試練：敵画像の見切れ防止
+======================================== */
+
+#trial-battle-screen #trial-enemy-image {
+  overflow: visible;
+}
+
+/* ========================================
+   勇者の試練：ククデーモン降臨時の背景暗転
+======================================== */
+
+#trial-battle-screen {
+  position: relative;
+  isolation: isolate;
+}
+
+/* 背景だけを覆う暗転レイヤー */
+#trial-battle-screen.trial-demon-darkening::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #08000d;
+  pointer-events: none;
+  z-index: 0;
+  animation: trialDemonBackgroundDark 3s ease-out forwards;
+}
+
+/* バトルUIを暗転レイヤーより手前に表示 */
+#trial-battle-screen > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* 敵エリアの既存配置は維持 */
+#trial-battle-screen .enemy-area {
+  z-index: 2;
+}
+
+@keyframes trialDemonBackgroundDark {
+  0%   { opacity: 0; }
+  10%  { opacity: 0.90; }
+  85%  { opacity: 0.90; }
+  95%  { opacity: 0.90; }
+  100% { opacity: 0; }
+}
+
+/* ========================================
+   勇者の試練 専用VICTORY画面
+======================================== */
+
+#trial-victory-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: radial-gradient(
+    circle at center,
+    #263f75 0%,
+    #10182d 65%,
+    #070a13 100%
+  );
+  color: white;
+  text-align: center;
+}
+
+.trial-victory-content {
+  min-height: calc(100dvh - 48px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.trial-victory-stars {
+  color: #ffdb6e;
+  font-size: clamp(12px, 3vw, 17px);
+  font-weight: bold;
+}
+
+/* 勇者の試練・完全制覇メインタイトル */
+.trial-victory-content .trial-victory-main-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: #ffdf70;
+  font-size: clamp(34px, 8vw, 58px);
+  font-weight: 900;
+  line-height: 1.25;
+  text-shadow:
+    0 4px 0 #9b6416,
+    0 0 22px rgba(255, 210, 80, 0.4);
+  animation: trialVictoryTitleAppear 0.8s ease-out both;
+}
+
+@keyframes trialVictoryTitleAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.trial-victory-content p {
+  font-size: clamp(15px, 4vw, 19px);
+  line-height: 2;
+}
+
+#trial-victory-next {
+  margin-top: 20px;
+}
+
+/* 勇者の試練：画面暗転 */
+/* 勇者の試練：黒い幕による暗転 */
+#trial-victory-screen {
+  position: relative;
+}
+
+#trial-victory-screen::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 1s ease-in-out;
+}
+
+#trial-victory-screen.trial-fade-out::after {
+  opacity: 1;
+}
+
+/* ========================================
+   勇者の試練：専用スタッフロール
+======================================== */
+
+#trial-credits-screen {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* スタッフロール画面の上下配置 */
+#trial-credits-screen.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 上部65％：黒背景 */
+#trial-credits-upper {
+  position: relative;
+  flex: 0 0 65%;
+  min-height: 0;
+  background: #000;
+  overflow: hidden;
+  text-align: center;
+}
+
+#trial-credits-content {
+  padding: 15vh 16px 0;
+  line-height: 2.5;
+}
+
+/* 下部35％：風景と黒い余白 */
+#trial-credits-lower {
+  position: relative;
+  flex: 0 0 35%;
+  min-height: 0;
+  background: #000;
+  overflow: hidden;
+}
+
+/* 風景は画面下端から5vh浮かせる */
+#trial-credits-landscape {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 5vh);
+  overflow: hidden;
+}
+
+/* 背景とモンスターをまとめてスクロール */
+
+#trial-credits-screen.active #trial-credits-scroll-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  aspect-ratio: 1536 / 197;
+  width: auto;
+
+  animation: trialLandscapeScroll 83s linear forwards;
+}
+
+/* 背景画像 */
+
+#trial-credits-background {
+  position: absolute;
+  inset: 0;
+
+  background-image: url("images/ending_background2.png");
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+}
+
+/* 画像の右端から左端まで移動 */
+
+@keyframes trialLandscapeScroll {
+  from {
+  transform: translateX(calc(100vw - 100% - 275px));
+}
+
+  to {
+    transform: translateX(0);
+  }
+}
+/* スタッフロール：歩く勇者 */
+#trial-credits-screen.active #trial-credits-hero {
+  position: absolute;
+  left: 50%;
+  bottom: 6.5vh;
+  transform: translateX(-50%);
+  z-index: 2;
+
+ animation: trialHeroWalkAway 7s linear 0s paused forwards;
+}
+
+@keyframes trialHeroWalkAway {
+  from {
+    left: 50%;
+  }
+
+  to {
+    left: -55px;
+  }
+}
+
+#trial-credits-hero img {
+  display: block;
+  width: 55px;
+  height: auto;
+  image-rendering: pixelated;
+}
+/* 勇者の試練：スタッフロール文字スクロール */
+
+#trial-credits-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 20px 60px;
+  color: #fff;
+  text-align: center;
+  line-height: normal;
+}
+
+#trial-credits-screen.active #trial-credits-content {
+  animation: trialCreditsScroll 83s linear 2s forwards;
+}
+#trial-credits-content h2 {
+  font-size: 26px;
+  margin: 0 0 80px;
+  letter-spacing: 2px;
+}
+
+#trial-credits-content p {
+  font-size: 15px;
+  line-height: 2;
+  margin: 0 0 65px;
+}
+
+#trial-credits-content strong {
+  font-size: 23px;
+  font-weight: bold;
+}
+
+#trial-credits-content small {
+  font-size: 12px;
+  color: #aaa;
+}
+
+#trial-credits-content .ending-special-thanks {
+  margin-top: 90px;
+  margin-bottom: 80px;
+}
+
+@keyframes trialCreditsScroll {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(calc(-100% - 65dvh));
+  }
+}
+
+/* 勇者の試練：THE END */
+
+#trial-credits-content .trial-credits-the-end {
+  font-size: 36px;
+  font-weight: bold;
+  letter-spacing: 6px;
+  margin-top: 100px;
+  margin-bottom: 80px;
+}
+
+/* ==================================
+   勇者の試練：THE END 最終演出
+================================== */
+
+/* 最終演出の表示領域 */
+#trial-ending-final {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  background: transparent;
+}
+
+/* THE END の文字 */
+#trial-ending-the-end {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  color: #fff;
+  font-size: 38px;
+  font-weight: bold;
+  letter-spacing: 6px;
+  white-space: nowrap;
+
+  opacity: 0;
+}
+
+/* THE END：BGMの再生位置に合わせて表示 */
+#trial-ending-the-end {
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+}
+
+#trial-credits-screen.trial-show-the-end #trial-ending-the-end {
+  opacity: 1;
+}
+
+/* BGM終了後に画面を暗転 */
+#trial-credits-screen.trial-ending-fade-out {
+  opacity: 0;
+  transition: opacity 2s ease-in-out;
+}
+
+/* 勇者の試練：エンディング登場モンスター（テスト） */
+
+#trial-ending-slime {
+  position: absolute;
+  left: 33%;
+  bottom: 20px;
+  z-index: 2;
+}
+
+#trial-ending-slime img {
+  display: block;
+  width: 45px;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+@keyframes trialSlimeScroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100vw);
+  }
+}
+
+/* エンディング：スライムのジャンプ */
+
+#trial-ending-slime img {
+  animation: trialSlimeJump 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes trialSlimeJump {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-10px);
+  }
+}
+
+/* エンディング：羽ばたくドラゴン */
+#trial-ending-dragon {
+  position: absolute;
+  left: 60%;
+  bottom: 38px;
+  z-index: 2;
+}
+
+#trial-ending-dragon img {
+  display: block;
+  width: 65px;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+/* エンディング追加モンスター共通設定 */
+.trial-ending-monster {
+    position: absolute;
+    bottom: 20px;
+    z-index: 2;
+}
+
+.trial-ending-monster img {
+    display: block;
+    width: 65px;
+    height: auto;
+    image-rendering: pixelated;
+}
+
+/* ドラゴン47%・スライム33%の間に7体を等間隔配置 */
+
+#trial-ending-golem {
+  left: 55.5%;
+}
+
+#trial-ending-minotaur {
+  left: 52.2857%;
+}
+
+#trial-ending-yeti {
+  left: 49.0714%;
+}
+
+#trial-ending-werewolf {
+  left: 45.8571%;
+}
+
+#trial-ending-ghost {
+  left: 42.6429%;
+}
+
+#trial-ending-goblin {
+  left: 39.4286%;
+}
+
+#trial-ending-kinokon {
+  left: 36.2143%;
+}
+
+/* エンディング：ゴーレムだけ少し大きく */
+#trial-ending-golem img {
+    width: 80px;
+}
+
+/* ========================================
+   勇者の試練：スマホ版エンディング調整
+   PC版には影響しない
+======================================== */
+
+@media (max-width: 500px) {
+
+  /* スマホ版だけ背景の開始位置を調整 */
+  @keyframes trialLandscapeScroll {
+    from {
+      transform: translateX(calc(100vw - 100%));
+    }
+
+    to {
+      transform: translateX(0);
+    }
+  }
+
+}
+
+/* =====================================
+   スマホ版エンディング
+   地上モンスターの足元調整
+===================================== */
+
+@media (max-width: 500px) {
+  .trial-ending-monster {
+    bottom: 12px;
+  }
+
+  #trial-ending-slime {
+    bottom: 12px;
+  }
+}
+
+
+/* 最終演出：CSSで確実に表示・暗転 */
+#trial-credits-screen.active #trial-ending-the-end {
+  animation: trialFinalShow 1.5s ease 94s forwards !important;
+}
+
+#trial-credits-screen.active {
+  animation: trialFinalFade 2s ease 98s forwards;
+}
+
+@keyframes trialFinalShow {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes trialFinalFade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* =========================================
+   無限回廊：解放演出
+   既存エンディングの設定には触れない
+========================================= */
+
+#infinite-corridor-unlock-screen {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 24px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at center, #27105b 0%, #08051d 65%, #000 100%);
+  color: #fff;
+  text-align: center;
+}
+
+#infinite-corridor-unlock-screen.active {
+  display: flex;
+}
+
+.infinite-corridor-unlock-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+  animation: infiniteCorridorUnlockPop 0.85s
+    cubic-bezier(.18, .85, .32, 1.25) both;
+}
+
+.infinite-corridor-unlock-label {
+  margin-bottom: 20px;
+  color: #ffe98a;
+  font-size: clamp(18px, 3vw, 30px);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 12px #ff9d00, 0 0 28px #a84dff;
+}
+
+.infinite-corridor-unlock-banner {
+  display: block;
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 16px;
+  box-shadow:
+    0 0 22px rgba(0, 195, 255, 0.7),
+    0 0 48px rgba(165, 60, 255, 0.55);
+}
+
+.infinite-corridor-unlock-message {
+  margin: 30px 0;
+  color: #fff;
+  font-size: clamp(18px, 3.2vw, 32px);
+  font-weight: 700;
+  line-height: 1.8;
+  text-shadow: 0 0 12px #6e42ff;
+}
+
+.infinite-corridor-unlock-message strong {
+  display: inline-block;
+  color: #ffe98a;
+  font-size: 1.12em;
+}
+
+.infinite-corridor-return-button {
+  min-width: 240px;
+  padding: 16px 30px;
+  border: 2px solid #ffe98a;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #6134c8, #28105d);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(161, 94, 255, 0.6);
+}
+
+.infinite-corridor-return-button:hover {
+  filter: brightness(1.2);
+}
+
+@keyframes infiniteCorridorUnlockPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 500px) {
+  #infinite-corridor-unlock-screen {
+    padding: 16px;
+  }
+
+  .infinite-corridor-unlock-label {
+    margin-bottom: 14px;
+    letter-spacing: 0.05em;
+  }
+
+  .infinite-corridor-unlock-banner {
+    border-radius: 8px;
+  }
+
+  .infinite-corridor-unlock-message {
+    margin: 22px 0;
+  }
+
+  .infinite-corridor-return-button {
+    width: 100%;
+    min-width: 0;
+    max-width: 340px;
+    padding: 14px 18px;
+    font-size: 18px;
+  }
+}
+
+/* 無限回廊：不正解表示を右寄せ */
+#infinite-corridor-battle-screen .infinite-corridor-miss-label {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+}
+
+/* 無限回廊：現在階層表示 */
+#infinite-corridor-floor {
+    display: inline-block;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.65);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.9em;
+    text-shadow: 1px 1px 2px #000;
+}
+
+/* ========================================
+   不正解時：ダメージ演出
+======================================== */
+
+/* 赤いフラッシュ */
+.damage-flash {
+  position: relative;
+}
+
+.damage-flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 9999;
+  animation: damageFlash 0.2s ease-out;
+}
+
+/* 画面の揺れ */
+.damage-shake {
+  animation: damageShake 0.35s ease-in-out;
+}
+
+@keyframes damageFlash {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes damageShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+.mobile-button-text {
+  display: none;
+}
+
+/* 無限回廊：階層・最高到達階層 */
+.infinite-corridor-status {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@media (max-width: 510px) {
+    .infinite-corridor-status {
+        justify-content: flex-end;
+        margin-bottom: 8px;
+    }
+}
+   
+
+#infinite-corridor-floor,
+#infinite-corridor-best-floor {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(20, 20, 40, 0.85);
+    border: 2px solid #fff;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   無限回廊：称号獲得ポップアップ
+========================================= */
+
+#infinite-corridor-title-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.75);
+}
+
+#infinite-corridor-title-popup[hidden] {
+    display: none !important;
+}
+
+.infinite-corridor-title-card {
+    width: min(100%, 380px);
+    padding: 28px 20px;
+
+    border: 4px solid #ffd75a;
+    border-radius: 24px;
+
+    background: linear-gradient(
+        145deg,
+        #fff9d8,
+        #ffffff
+    );
+
+    text-align: center;
+
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+
+    animation: infiniteCorridorTitlePop 0.45s ease-out;
+}
+
+.infinite-corridor-title-card h2 {
+    margin: 0 0 15px;
+    color: #d18b00;
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.infinite-corridor-title-icon {
+    margin: 10px 0;
+    font-size: 65px;
+}
+
+.infinite-corridor-title-name {
+    margin: 15px 0;
+    color: #3b4cca;
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.infinite-corridor-title-card p {
+    font-weight: bold;
+}
+
+.infinite-corridor-title-message {
+    margin: 20px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+@keyframes infiniteCorridorTitlePop {
+    0% {
+        opacity: 0;
+        transform: scale(0.7);
+    }
+
+    70% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* =========================================
+   無限回廊：獲得称号一覧
+========================================= */
+
+#infinite-corridor-titles-button {
+    display: block;
+    width: min(90%, 360px);
+    margin: 25px auto;
+}
+
+#infinite-corridor-titles-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+#infinite-corridor-titles-popup[hidden] {
+    display: none !important;
+}
+
+.infinite-corridor-titles-card {
+    width: min(100%, 400px);
+    max-height: 85vh;
+    overflow-y: auto;
+
+    padding: 25px 20px;
+
+    border: 4px solid #ffd75a;
+    border-radius: 22px;
+
+    background: linear-gradient(
+        145deg,
+        #fff9d8,
+        #ffffff
+    );
+
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.infinite-corridor-titles-card h2 {
+    margin: 0 0 12px;
+    color: #d18b00;
+    font-size: 23px;
+    font-weight: 900;
+}
+
+#infinite-corridor-titles-count {
+    margin: 10px 0 18px;
+    color: #555;
+    font-weight: bold;
+}
+
+#infinite-corridor-titles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.infinite-corridor-title-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+
+    padding: 13px 14px;
+
+    border: 2px solid #ccc;
+    border-radius: 12px;
+
+    background: #eeeeee;
+    color: #888;
+    font-weight: bold;
+}
+
+.infinite-corridor-title-item.earned {
+    border-color: #e5b72e;
+    background: #fff1b8;
+    color: #9a6900;
+}
+
+.infinite-corridor-title-item .title-status {
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+#infinite-corridor-titles-close {
+    width: 100%;
 }
