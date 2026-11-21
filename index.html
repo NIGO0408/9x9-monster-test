@@ -15,8 +15,11 @@
 
   <style>
     #lake-screen {
-      background: linear-gradient(#d7f3ff, #eefbff);
-    }
+    background-image: url("images/battle_lake.png");
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+}
     #lake-screen .forest-route::before {
       background: #a9d8e8;
     }
@@ -51,24 +54,30 @@
   loop
 >
 </audio>
+   <!-- 勇者の試練 完全制覇ファンファーレ -->
+<audio
+  id="trial-victory-fanfare"
+  src="audio/trial_victory_fanfare.mp3"
+  preload="auto"
+></audio>
     
-    <div class="logo">
+   <div class="logo">
 
-      <div class="logo-monster">
-        🦊
-      </div>
+  <img
+    src="images/title_logo.png"
+    alt="9×9モンスターズ"
+    class="title-logo-image"
+  >
 
-      <h1>
-        9×9モンスターズ
-      </h1>
+  <div class="logo-monster">
+    <img
+      src="images/top_yousya3.png"
+      alt="自作ドットキャラクター"
+      class="logo-monster-image"
+    >
+  </div>
 
-      <p>
-        九九を勉強して<br>
-        モンスターと冒険に行こう！
-      </p>
-
-    </div>
-
+  </div>
 
     <div class="main-menu-buttons">
 
@@ -111,6 +120,13 @@
     class="screen"
   >
 
+<button
+  id="training-top-button"
+  class="small-button"
+>
+  ← トップ
+</button>
+    
     <div class="page-title">
 
       <div>
@@ -136,18 +152,8 @@
       id="save-status"
       class="save-status"
     ></div>
-
-
-    <button
-      id="reset-data"
-      class="reset-button"
-    >
-      🗑️ セーブデータを消して最初から
-    </button>
-
+ 
   </section>
-
-
 
   <!-- =================================
        修行クイズ
@@ -247,12 +253,7 @@
     id="result-screen"
     class="screen"
   >
-
-    <div class="result-icon">
-      🏆
-    </div>
-
-
+  
     <h1 id="result-title">
       修行完了！
     </h1>
@@ -346,6 +347,13 @@
       📖 モンスター図鑑を見る
     </button>
 
+　<button
+  id="enemy-book-button"
+  class="sub-button"
+>
+  👾 敵図鑑を見る
+</button>
+    
   </section>
 
 
@@ -409,13 +417,12 @@
 
     <div class="world-header">
 
-      <button
-        id="world-back-button"
-        class="small-button"
-      >
-        ← 戻る
-      </button>
-
+     <button
+  id="world-back-button"
+  class="small-button"
+>
+  ← トップ
+</button>
 
       <h1>
         🗺️ 冒険マップ
@@ -423,119 +430,130 @@
 
     </div>
 
-
-    <div class="player-stats">
-
-      <div>
-
-        冒険レベル
-
-        <strong id="player-level">
-          Lv.1
-        </strong>
-
-      </div>
-
-
-      <div>
-
-        コイン
-
-        <strong id="player-coins">
-          0
-        </strong>
-
-      </div>
-
-    </div>
-
-
-    <div class="world-map">
+     <div class="world-map">
 
       <!-- はじまりの森 -->
 
-      <button
-        id="forest-area"
-        class="map-area forest"
-      >
-
-        🌳
-
-        <strong>
-          はじまりの森
-        </strong>
-
-        <small>
-          冒険をはじめる
-        </small>
-
-      </button>
-
-
-      <!-- 九九の湖 -->
-
-      <button
-        id="lake-area"
-        class="map-area lake locked-area"
-        disabled
-      >
-
-        🌊
-
-        <strong>
-          九九の湖
-        </strong>
-
-        <small>
-          はじまりの森クリアで解放
-        </small>
-
-      </button>
-
-
-      <!-- 炎のカッケ山 -->
-<button
-  id="volcano-area"
-  class="map-area mountain locked-area"
-  disabled
+     <button
+  id="forest-area"
+  class="map-area forest stage-banner"
 >
-  🌋
-
-  <strong>
-    炎のカッケ山
-  </strong>
-
-  <small>
-    九九の湖クリアで解放
-  </small>
+  <img
+    src="images/banner_forest.png"
+    alt="はじまりの森"
+    class="stage-banner-image"
+  >
 </button>
 
 
-      <!-- 九九王城 -->
+ <!-- 九九の湖 -->
 
-      <button
-        class="map-area castle locked-area"
-        disabled
-      >
+<button
+  id="lake-area"
+  class="map-area lake locked-area stage-banner"
+  disabled
+>
+  <img
+    src="images/banner_lake.png"
+    alt="九九の湖"
+    class="stage-banner-image"
+  >
+</button>
 
-        🏰
 
-        <strong>
-          九九王城
-        </strong>
+<!-- 炎のカッケ山 -->
 
-        <small>
-          COMING SOON
-        </small>
+<button
+  id="volcano-area"
+  class="map-area mountain locked-area stage-banner"
+  disabled
+>
+  <img
+    src="images/banner_volcano.png"
+    alt="炎のカッケ山"
+    class="stage-banner-image"
+  >
+</button>
 
-      </button>
 
+   <!-- 魔王城 -->
+
+<button
+  id="castle-area"
+  class="map-area castle locked-area stage-banner"
+  disabled
+>
+  <img
+    src="images/banner_castle.png"
+    alt="魔王城"
+    class="stage-banner-image"
+  >
+</button>
+
+<!-- 勇者の試練 -->
+
+<button
+  id="trial-area"
+  class="map-area trial stage-banner"
+  type="button"
+  hidden
+>
+  <img
+    src="images/banner_trial.png"
+    alt="勇者の試練"
+    class="stage-banner-image"
+  >
+</button>
+
+<!-- 無限回廊 -->
+<button
+  id="infinite-corridor-area"
+  class="map-area stage-banner"
+  type="button"
+  hidden
+>
+  <img
+    src="images/banner_infinite_corridor.png"
+    alt="無限回廊"
+    class="stage-banner-image"
+  >
+</button>
+      
     </div>
+    <!-- 獲得称号一覧ボタン -->
+    <button
+      id="infinite-corridor-titles-button"
+      class="main-button"
+      type="button"
+      hidden
+    >
+      🏆 獲得称号一覧
+    </button>
 
+    <!-- 獲得称号一覧ポップアップ -->
+    <div
+      id="infinite-corridor-titles-popup"
+      hidden
+    >
+      <div class="infinite-corridor-titles-card">
+        <h2>🏆 獲得称号一覧</h2>
+
+        <p id="infinite-corridor-titles-count">獲得数：0／5</p>
+
+        <div id="infinite-corridor-titles-list"></div>
+
+        <button
+          id="infinite-corridor-titles-close"
+          class="main-button"
+          type="button"
+        >
+          閉じる
+        </button>
+      </div>
+    </div>
+    
   </section>
-
-
-
+  
   <!-- =================================
        はじまりの森
        探索マップ
@@ -546,52 +564,36 @@
     class="screen"
   >
 
-    <div class="forest-header">
+   <div class="forest-header">
 
-      <button
+    <button
         id="forest-back-button"
         class="small-button"
-      >
+    >
         ← マップ
-      </button>
+    </button>
 
+    <div class="stage-title-area">
 
-      <div>
-
-        <h1>
-          🌳 はじまりの森
-        </h1>
-
-        <small>
-          全5バトル
-        </small>
-
-      </div>
+        <img
+            src="images/banner_forest.png"
+            alt="はじまりの森"
+            class="stage-title-banner"
+        >
 
     </div>
 
+</div>
 
 
-    <div class="forest-intro">
+<div class="forest-intro">
 
-      <div class="forest-art">
-        🌳🌲🌳
-      </div>
+    <p>
+        九九を使って森のモンスターたちを<br>
+        倒しながら森の奥を目指そう！
+    </p>
 
-
-      <h2>
-        森を進もう！
-      </h2>
-
-
-      <p>
-        九九を使って<br>
-        モンスターたちを倒しながら<br>
-        森の奥を目指そう！
-      </p>
-
-    </div>
-
+</div>
 
 
     <!-- =================================
@@ -673,7 +675,7 @@
         <div class="node-info">
 
           <strong>
-            森の奥へ
+            キノコ広場
           </strong>
 
           <small>
@@ -703,7 +705,7 @@
         <div class="node-info">
 
           <strong>
-            キノコ広場
+            森の奥へ
           </strong>
 
           <small>
@@ -874,38 +876,24 @@
       </button>
 
 
-      <div>
+      <div class="stage-title-area">
 
-        <h1>
-          🌊 九九の湖
-        </h1>
-
-        <small>
-          全5バトル
-        </small>
-
-      </div>
-
+  <img
+    src="images/banner_lake.png"
+    alt="九九の湖"
+    class="stage-title-banner"
+  >
+  
+</div>
     </div>
 
 
 
     <div class="forest-intro">
-
-      <div class="forest-art">
-        🌊💧🌊
-      </div>
-
-
-      <h2>
-        湖を進もう！
-      </h2>
-
-
+ 
       <p>
-        九九を使って<br>
-        水のモンスターたちを倒しながら<br>
-        湖底を目指そう！
+        九九を使って水のモンスターたちを<br>
+  倒しながら湖底を目指そう！
       </p>
 
     </div>
@@ -1189,27 +1177,21 @@
       ← マップ
     </button>
 
-    <div>
-      <h1>🌋 炎のカッケ山</h1>
-      <small>全6バトル</small>
+    <div class="stage-title-area">
+      <img
+        src="images/banner_volcano.png"
+        alt="炎のカッケ山"
+        class="stage-title-banner"
+      >
     </div>
 
   </div>
 
   <div class="forest-intro">
-
-    <div class="forest-art">
-      🌋🔥🌋
-    </div>
-
-    <h2>炎の山を登ろう！</h2>
-
     <p>
-      九九を使って<br>
-      炎のモンスターたちを倒しながら<br>
-      火口を目指そう！
+      九九を使って炎のモンスターたちを<br>
+      倒しながら火口を目指そう！
     </p>
-
   </div>
 
   <!-- 探索ルート -->
@@ -1353,6 +1335,190 @@
 
 </section>
 
+<!-- ==============================
+        魔王城
+============================== -->
+
+<section
+  id="castle-screen"
+  class="screen forest-screen"
+>
+
+  <div class="forest-header">
+
+    <button
+      id="castle-back-button"
+      class="small-button"
+    >
+      ← マップ
+    </button>
+
+    <div class="stage-title-area">
+      <img
+        src="images/banner_castle.png"
+        alt="魔王城"
+        class="stage-title-banner"
+      >
+    </div>
+
+  </div>
+
+  <div class="forest-intro">
+    <p>
+      城に待ち受ける強敵を倒しながら<br>
+      魔王ククデスを目指そう！
+    </p>
+  </div>
+
+  <!-- 探索ルート -->
+
+  <div class="forest-route">
+
+    <!-- START -->
+
+    <div class="forest-node start-node">
+      <div class="node-icon">🏰</div>
+      <div class="node-info">
+        <strong>魔王城入口</strong>
+        <small>START</small>
+      </div>
+    </div>
+
+    <div class="route-line"></div>
+
+
+    <!-- BATTLE 1 -->
+
+    <button
+      class="forest-node battle-node"
+      data-battle="1"
+    >
+      <div class="node-icon">⚔️</div>
+      <div class="node-info">
+        <strong>城門</strong>
+        <small>バトル</small>
+      </div>
+    </button>
+
+    <div class="route-line"></div>
+
+
+    <!-- BATTLE 2 -->
+
+    <button
+      class="forest-node battle-node locked-node"
+      data-battle="2"
+      disabled
+    >
+      <div class="node-icon">🔒</div>
+      <div class="node-info">
+        <strong>大広間</strong>
+        <small>バトル</small>
+      </div>
+    </button>
+
+    <div class="route-line"></div>
+
+
+    <!-- BATTLE 3 -->
+
+    <button
+      class="forest-node battle-node locked-node"
+      data-battle="3"
+      disabled
+    >
+      <div class="node-icon">🔒</div>
+      <div class="node-info">
+        <strong>地下牢</strong>
+        <small>バトル</small>
+      </div>
+    </button>
+
+    <div class="route-line"></div>
+
+
+    <!-- BATTLE 4 -->
+
+    <button
+      class="forest-node battle-node locked-node"
+      data-battle="4"
+      disabled
+    >
+      <div class="node-icon">🔒</div>
+      <div class="node-info">
+        <strong>闇の回廊</strong>
+        <small>バトル</small>
+      </div>
+    </button>
+
+    <div class="route-line"></div>
+
+
+    <!-- BATTLE 5 -->
+
+    <button
+      class="forest-node battle-node locked-node"
+      data-battle="5"
+      disabled
+    >
+      <div class="node-icon">🔒</div>
+      <div class="node-info">
+        <strong>玉座への階段</strong>
+        <small>バトル</small>
+      </div>
+    </button>
+
+    <div class="route-line"></div>
+
+
+    <!-- BOSS -->
+
+    <button
+      class="forest-node boss-node locked-node"
+      data-battle="6"
+      disabled
+    >
+      <div class="node-icon">👑</div>
+      <div class="node-info">
+        <strong>魔王の間</strong>
+        <small>BATTLE</small>
+      </div>
+    </button>
+
+    <div class="route-line"></div>
+
+
+    <!-- GOAL -->
+
+    <div class="forest-node goal-node locked-node">
+      <div class="node-icon">🏆</div>
+      <div class="node-info">
+        <strong>魔王城クリア</strong>
+        <small>魔王ククデスを倒せ！</small>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- 攻略状況 -->
+
+  <div class="forest-progress">
+
+    <strong>魔王城の攻略状況</strong>
+
+    <div class="forest-progress-bar">
+      <div id="castle-progress-fill"></div>
+    </div>
+
+    <small id="castle-progress-text">
+      0 / 6 バトルクリア
+    </small>
+
+  </div>
+
+</section>
+  
   <!-- =================================
        バトル
   ================================= -->
@@ -1399,13 +1565,23 @@
       </div>
 
 
-      <div
+     <div class="battle-enemy-wrapper">
+
+    <div
+        id="kukudes-last-message"
+        class="kukudes-last-message"
+    >
+        まだまだ九九の勉強は終わらん・・・
+    </div>
+
+    <div
         id="enemy-image"
         class="battle-monster-image"
-      >
+    >
         🟢
-      </div>
+    </div>
 
+</div>
 
       <div class="hp-label">
 
@@ -1520,8 +1696,355 @@
 
   </section>
 
+<!-- =================================
+       勇者の試練：専用バトル
+  ================================= -->
+
+  <section
+    id="trial-battle-screen"
+    class="screen"
+  >
+
+    <!-- ヘッダー -->
+    <div class="battle-header">
+
+      <button
+        id="trial-battle-back-button"
+        class="small-button"
+        type="button"
+      >
+        ← 試練へ戻る
+      </button>
+
+      <span id="trial-battle-number">
+        TRIAL 1
+      </span>
+
+    </div>
 
 
+    <!-- 敵モンスター -->
+    <div class="enemy-area">
+
+      <div
+        id="trial-enemy-name"
+        class="battle-name"
+      >
+        ダークスライム
+      </div>
+
+      <div class="battle-enemy-wrapper">
+
+        <div
+  id="trial-enemy-image"
+  class="battle-monster-image"
+>
+  <img
+    src="images/dark_slime.png"
+    alt="ダークスライム"
+  >
+</div>
+
+      </div>
+
+      <div class="hp-label">
+
+        <!-- 勇者の試練専用：敵ライフ -->
+<div
+  id="trial-enemy-hearts"
+  class="trial-enemy-hearts"
+  aria-label="敵の残りライフ 3"
+>
+  <span>♥</span>
+  <span>♥</span>
+  <span>♥</span>
+</div>
+</div> <!-- hp-label を閉じる -->
+</div> <!-- enemy-area を閉じる -->
+        
+    <!-- バトルメッセージ -->
+    <div
+      id="trial-battle-message"
+      class="battle-message"
+    >
+      勇者の試練に挑戦！
+    </div>
+
+
+   <!-- 勇者 -->
+<div class="player-battle">
+
+    <div
+        id="trial-hero-image"
+        class="player-monster-image"
+    >
+        <img
+            src="images/top_yousya.png"
+            alt="勇者"
+        >
+    </div>
+
+    <div class="player-battle-info">
+
+        <div class="battle-name">
+            <span>勇者</span>
+        </div>
+
+        <div class="trial-hero-message">
+            連続正解で敵を倒せ！
+        </div>
+
+<!-- 勇者の試練：勇者HP -->
+<div class="hp-label">
+  <span>HP</span>
+  <strong id="trial-hero-hp-text">100 / 100</strong>
+</div>
+
+<div class="battle-hp">
+  <div
+    id="trial-hero-hp-fill"
+    class="battle-hp-fill"
+    style="width: 100%;"
+  ></div>
+</div>
+      
+    </div>
+
+</div>
+
+
+    <!-- 穴埋め九九問題 -->
+    <div class="battle-question-box">
+
+      <div
+        id="trial-battle-question"
+        class="battle-question"
+      >
+        ？ × 3 = 6
+      </div>
+
+      <div
+        id="trial-battle-answers"
+        class="battle-answers"
+      ></div>
+
+    </div>
+
+  </section>
+
+<!-- =================================
+     無限回廊：専用バトル
+================================= -->
+
+<section
+  id="infinite-corridor-battle-screen"
+  class="screen"
+>
+
+  <!-- ヘッダー -->
+  <div class="battle-header">
+
+   <div class="infinite-corridor-header-buttons">
+
+ <button
+  id="infinite-corridor-back-button"
+  class="small-button"
+  type="button"
+>
+  <span class="pc-button-text">← 中断して戻る</span>
+  <span class="mobile-button-text">← 中断</span>
+</button>
+
+<button
+  id="infinite-corridor-restart-button"
+  class="small-button"
+  type="button"
+>
+  <span class="pc-button-text">↻ 最初から挑戦</span>
+  <span class="mobile-button-text">↻ リセット</span>
+</button>
+
+</div>
+     
+  </div>
+
+  <!-- 敵モンスター -->
+  <div class="enemy-area">
+
+    <div
+      id="infinite-corridor-enemy-name"
+      class="battle-name"
+    >
+      モンスター
+    </div>
+
+    <div class="battle-enemy-wrapper">
+
+      <div
+        id="infinite-corridor-enemy-image"
+        class="battle-monster-image"
+      >
+        <img
+          src="images/dark_slime.png"
+          alt="モンスター"
+        >
+      </div>
+
+    </div>
+
+  </div>
+
+<!-- バトルメッセージ -->
+<div
+    id="infinite-corridor-battle-message"
+    class="battle-message"
+>
+    無限回廊に挑戦！
+</div>
+
+<div class="infinite-corridor-status">
+    <span id="infinite-corridor-floor">
+        FLOOR 1
+    </span>
+
+    <span id="infinite-corridor-best-floor">
+        BEST 1
+    </span>
+</div>
+  
+  <!-- 勇者 -->
+  <div class="player-battle">
+
+    <div
+      id="infinite-corridor-hero-image"
+      class="player-monster-image"
+    >
+      <img
+        src="images/top_yousya.png"
+        alt="勇者"
+      >
+    </div>
+
+    <div class="player-battle-info">
+
+      <div class="battle-name">
+        <span>勇者</span>
+      </div>
+
+      <div class="trial-hero-message">
+        正解して階層を進め！
+      </div>
+
+      <div class="hp-label infinite-corridor-miss-label">
+    <span>不正解</span>
+    <strong id="infinite-corridor-miss-count">0 / 3</strong>
+</div>
+
+    </div>
+
+  </div>
+
+  <!-- 穴埋め九九問題 -->
+  <div class="battle-question-box">
+
+    <div
+      id="infinite-corridor-question"
+      class="battle-question"
+    >
+      ？ × 3 = 6
+    </div>
+
+    <div
+      id="infinite-corridor-answers"
+      class="battle-answers"
+    ></div>
+
+  </div>
+
+  
+  <!-- 称号獲得ポップアップ -->
+  <div
+    id="infinite-corridor-title-popup"
+    class="infinite-corridor-title-popup"
+    hidden
+  >
+    <div class="infinite-corridor-title-card">
+
+      <h2>称号獲得！</h2>
+
+      <div class="infinite-corridor-title-icon">
+        🏆
+      </div>
+
+      <div
+        id="infinite-corridor-title-name"
+        class="infinite-corridor-title-name"
+      >
+        九九の挑戦者
+      </div>
+
+      <p id="infinite-corridor-title-floor">
+        10階到達！
+      </p>
+
+      <p class="infinite-corridor-title-message">
+        新しい称号を獲得しました！
+      </p>
+
+      <button
+        id="infinite-corridor-title-confirm"
+        class="main-button"
+        type="button"
+      >
+        確認する
+      </button>
+
+    </div>
+  </div>
+
+
+</section>
+  
+<!-- =================================
+     勇者の試練：ゲームオーバー
+================================= -->
+
+<section
+  id="trial-gameover-screen"
+  class="screen"
+>
+  <div class="battle-result">
+
+    <div class="trial-gameover-image">
+  <img src="images/gameover.png" alt="ゲームオーバー">
+</div>
+
+    <h1 id="trial-gameover-title">
+      GAME OVER
+    </h1>
+  
+    <p id="trial-gameover-message">
+      勇者は力尽きた……
+    </p>
+
+    <button
+      id="trial-retry-button"
+      class="main-button"
+      type="button"
+    >
+      もう一度挑戦
+    </button>
+
+    <button
+      id="trial-gameover-back-button"
+      class="sub-button"
+      type="button"
+    >
+      試練へ戻る
+    </button>
+
+  </div>
+</section>
   <!-- =================================
        バトル結果
   ================================= -->
@@ -1593,7 +2116,184 @@
 
   </section>
 
+<!-- ==============================
+     勇者の試練 完全制覇
+============================== -->
+<section id="trial-victory-screen" class="screen">
 
+  <div class="trial-victory-content">
+    <div class="trial-victory-stars">★ CONGRATULATIONS ★</div>
+
+<h1 class="trial-victory-main-title">
+  <span>勇者の試練</span>
+  <span>完全制覇！</span>
+</h1>
+
+    <p>
+      魔獣ククデーモンを倒した！<br>
+      おめでとう！<br>
+      キミは立派な九九の勇者だ！
+    </p>
+    
+  </div>
+
+</section>
+  
+<!-- ==============================
+     エンディング
+============================== -->
+<!-- 勇者の試練 専用スタッフロール -->
+<section id="trial-credits-screen" class="screen">
+
+  <!-- 上部：スタッフクレジット -->
+  <div id="trial-credits-upper">
+   <div id="trial-credits-content">
+
+  <h2>9×9 MONSTERS</h2>
+
+  <p>企画・原案<br><strong>2号</strong></p>
+  <p>ゲームデザイン<br><strong>2号</strong></p>
+  <p>プログラミング<br><strong>2号</strong><br><small>（with ちゃぴこ）</small></p>
+  <p>キャラクターデザイン<br><strong>2号</strong></p>
+  <p>背景・グラフィック<br><strong>2号</strong><br><small>（with ちゃぴこ）</small></p>
+  <p>音楽・サウンド<br><strong>2号</strong><br><small>(suno AI)</small></p>
+  <p>シナリオ<br><strong>2号</strong></p>
+  <p>バランス調整<br><strong>2号</strong></p>
+  <p>デバッグ<br><strong>2号</strong></p>
+  <p>ディレクター<br><strong>2号</strong></p>
+  <p>プロデューサー<br><strong>2号</strong></p>
+  <p>総監督<br><strong>2号</strong></p>
+  <p>制作・著作<br><strong>2号</strong></p>
+
+  <p class="ending-special-thanks">
+    SPECIAL THANKS<br>
+    <strong>YOU</strong>
+  </p>
+
+</div>
+  </div>
+
+  <!-- 下部：横スクロールする風景 -->
+  <div id="trial-credits-lower">
+    <div id="trial-credits-landscape">
+
+  <!-- 背景とモンスターを一緒にスクロール -->
+  <div id="trial-credits-scroll-world">
+
+    <div id="trial-credits-background"></div>
+
+    <!-- エンディング登場モンスター -->
+<!-- エンディング：ドラゴン -->
+<div id="trial-ending-dragon">
+  <img src="images/doragon_hover.gif" alt="ドラゴン">
+</div>
+
+<!-- エンディング登場モンスター7体 -->
+<div id="trial-ending-golem" class="trial-ending-monster">
+  <img src="images/gouremu_move.gif" alt="ゴーレム">
+</div>
+
+<div id="trial-ending-minotaur" class="trial-ending-monster">
+  <img src="images/minotaurosu_move.gif" alt="ミノタウロス">
+</div>
+
+<div id="trial-ending-yeti" class="trial-ending-monster">
+  <img src="images/ietexi_move.gif" alt="イエティ">
+</div>
+
+<div id="trial-ending-werewolf" class="trial-ending-monster">
+  <img src="images/wolf_jump_loop.gif" alt="ワーウルフ">
+</div>
+
+<div id="trial-ending-ghost" class="trial-ending-monster">
+  <img src="images/ghost_move.gif" alt="ゴースト">
+</div>
+
+<div id="trial-ending-goblin" class="trial-ending-monster">
+  <img src="images/goblin_move.gif" alt="ゴブリン">
+</div>
+
+<div id="trial-ending-kinokon" class="trial-ending-monster">
+  <img src="images/kinokon_move.gif" alt="キノコン">
+</div>
+    
+    <div id="trial-ending-slime">
+      <img src="images/slime.png" alt="スライム">
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 左へ歩く勇者 -->
+<div id="trial-credits-hero">
+  <img src="images/hero_walk.gif" alt="歩く勇者">
+</div>
+    
+  </div>
+
+<!-- 勇者の試練：エンディング最終演出 -->
+<div id="trial-ending-final">
+  <div id="trial-ending-the-end">THE END</div>
+</div>
+  
+</section>
+
+<!-- エクストラステージ「無限回廊」解放画面（勇者の試練エンディング後） -->
+<section id="infinite-corridor-unlock-screen" class="screen">
+  <div class="infinite-corridor-unlock-content">
+    <div class="infinite-corridor-unlock-label">EXTRA STAGE UNLOCKED!</div>
+    <img
+      src="images/banner_infinite_corridor.png"
+      alt="無限回廊"
+      class="infinite-corridor-unlock-banner"
+    >
+    <p class="infinite-corridor-unlock-message">
+      エクストラステージ<br>
+      <strong>『無限回廊』が解放されました！</strong>
+    </p>
+    <button type="button" class="infinite-corridor-return-button" onclick="openWorld()">
+      冒険マップに戻る
+    </button>
+  </div>
+</section>
+  
+<section id="ending-screen" class="screen">
+
+  <div id="ending-message-area">
+    <div id="ending-message"></div>
+  </div>
+
+  <div id="ending-credits-area">
+    <div id="ending-credits">
+
+      <h2>9×9 MONSTERS</h2>
+
+      <p>企画・原案<br><strong>2号</strong></p>
+      <p>ゲームデザイン<br><strong>2号</strong></p>
+      <p>プログラミング<br><strong>2号</strong><br><small>（with ちゃぴこ）</small></p>
+      <p>キャラクターデザイン<br><strong>2号</strong></p>
+      <p>背景・グラフィック<br><strong>2号</strong><br><small>（with ちゃぴこ）</small></p>
+      <p>音楽・サウンド<br><strong>2号</strong><br><small>(suno AI)</small></p>
+      <p>シナリオ<br><strong>2号</strong></p>
+      <p>バランス調整<br><strong>2号</strong></p>
+      <p>デバッグ<br><strong>2号</strong></p>
+      <p>ディレクター<br><strong>2号</strong></p>
+      <p>プロデューサー<br><strong>2号</strong></p>
+      <p>総監督<br><strong>2号</strong></p>
+      <p>制作・著作<br><strong>2号</strong></p>
+
+      <p class="ending-special-thanks">
+        SPECIAL THANKS<br>
+        <strong>YOU</strong>
+      </p>
+
+    </div>
+  </div>
+
+  <div id="ending-the-end">THE END</div>
+
+</section>
 
   <!-- =================================
        モンスター育成
@@ -1604,6 +2304,13 @@
     class="screen"
   >
 
+<button
+    id="training-monster-top-button"
+    class="small-button"
+>
+    ← トップ
+</button>
+    
     <div class="page-title">
 
       <div>
@@ -1655,7 +2362,7 @@
         id="book-back"
         class="small-button"
       >
-        ← 戻る
+        ← トップ
       </button>
 
 
@@ -1674,14 +2381,59 @@
     </div>
 
 
-    <div
-      id="monster-list"
-      class="monster-list"
-    ></div>
+    <!-- 図鑑切り替え -->
+<div class="book-tabs">
+  <button
+    id="book-friend-tab"
+    class="book-tab active"
+  >
+    仲間モンスター
+  </button>
+
+  <button
+    id="book-enemy-tab"
+    class="book-tab"
+  >
+    敵モンスター
+  </button>
+</div>
+
+<!-- 仲間モンスター一覧 -->
+<div
+  id="monster-list"
+  class="monster-list"
+></div>
+
+<!-- 敵モンスター一覧（図鑑統合用） -->
+<div
+  id="book-enemy-list"
+  class="monster-list"
+  style="display: none;"
+></div>
 
   </section>
 
+<!-- 敵図鑑 -->
+<section
+  id="enemy-book-screen"
+  class="screen"
+>
+  <div class="book-header">
+    <button
+      id="enemy-book-back"
+      class="small-button"
+    >
+      ← トップ
+    </button>
 
+    <div>
+      <h1>👾 敵図鑑</h1>
+      <p>冒険で出会った敵を記録しよう！</p>
+    </div>
+  </div>
+
+  <div id="enemy-list" class="monster-list"></div>
+</section>
 
   <!-- =================================
        レベルアップ
@@ -1771,36 +2523,52 @@
   >
 
     <button
-      id="training-button"
-    >
-      🥋<br>
-      修行
-    </button>
+  id="training-button"
+>
+  <img src="images/syugyou.png" class="menu-icon" alt="">
+  修行
+</button>
+
+
+   <button
+  id="world-button"
+>
+  <img src="images/map.png" class="menu-icon" alt="">
+  冒険
+</button>
 
 
     <button
-      id="world-button"
-    >
-      🗺️<br>
-      冒険
-    </button>
+  id="monster-button"
+>
+  <img src="images/ikusei.png" class="menu-icon" alt="">
+  育成
+</button>
 
+　<button
+  id="menu-monster-book-button"
+>
+  <img src="images/zukan.png" class="menu-icon" alt="">
+  図鑑
+</button>
 
-    <button
-      id="monster-button"
-    >
-      👾<br>
-      育成
-    </button>
+</nav>
 
-  </nav>
+<button
+  id="reset-data"
+  class="reset-button"
+>
+  🗑️ セーブデータを消して最初から
+</button>  
 
+<!-- 勇者の試練 エンディングBGM -->
+<audio
+  id="trial-ending-bgm"
+  src="audio/ending.mp3"
+  preload="auto"
+></audio>
 
-</div>
-
-
-<script src="script.js?v=3"></script>
+<script src="script.js?v=5"></script>
 
 </body>
-
 </html>
