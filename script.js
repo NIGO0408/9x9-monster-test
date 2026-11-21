@@ -22,6 +22,7 @@ let bgmEnabled = false;
 
 const BGM_LIST = {
   title: "audio/op.mp3",
+   monsterBook: "audio/monster_book.mp3",
    training: "audio/training.mp3",
    trainingMonster: "audio/training_monster.mp3",
   world: "audio/world.mp3",
@@ -35,13 +36,30 @@ const BGM_LIST = {
   bossClear: "audio/boss_clear.mp3",
   volcanoBattle: "audio/volcano_battle.mp3",
   volcanoBoss: "audio/volcano_boss.mp3", 
+   castleBattle: "audio/castle_battle.mp3",
+castleBoss: "audio/castle_boss.mp3",
+ending: "audio/ending.mp3",
+  trialBattle: "audio/trial_battle.mp3",
+  trialGameover: "audio/trial_gameover.mp3",
+  trialNeoKukudes: "audio/trial_neo_kukudes.mp3",
+trialKukuDemon: "audio/trial_kuku_demon.mp3", 
+infiniteCorridorBattle: "audio/infinite_corridor_bgm.mp3",   
 };
 
 let currentBgmKey = null;
 
+/* 通常戦BGMの再開位置 */
+const battleBgmResumeTime = {
+  forestBattle: 0,
+  lakeBattle: 0,
+  volcanoBattle: 0,
+  castleBattle: 0 
+};
+
 function getBgmKeyForScreen(screenId) {
   switch (screenId) {
     case "title-screen": return "title";
+    case "monster-book-screen": return "monsterBook";    
     case "world-screen": return "world";
     case "training-screen": return "training";    
      case "quiz-screen": return "training";
@@ -49,7 +67,25 @@ function getBgmKeyForScreen(screenId) {
      case "levelup-screen": return "levelup";   
     case "forest-screen": return "forest";
    case "lake-screen": return "lakeBattle";
-   case "volcano-screen": return "volcanoBattle";     
+   case "volcano-screen": return "volcanoBattle";
+   case "castle-screen": return "castleBattle";
+   // 勇者の試練：バトルBGM
+case "trial-battle-screen":
+  if (trialBattleNumber === 9) {
+    return "trialNeoKukudes";
+  }
+
+  if (trialBattleNumber === 10) {
+    return "trialKukuDemon";
+  }
+
+  return "trialBattle";
+
+// 勇者の試練：ゲームオーバーBGM
+case "trial-gameover-screen": return "trialGameover"; 
+        // 無限回廊：バトルBGM
+case "infinite-corridor-battle-screen":
+  return "infiniteCorridorBattle";
    case "battle-screen":
       if (currentAdventureStage === "lake") {
         return currentBattleNumber === 6
@@ -63,13 +99,21 @@ function getBgmKeyForScreen(screenId) {
           : "volcanoBattle";
       }
 
+if (currentAdventureStage === "castle") {
+  return currentBattleNumber === 6
+    ? "castleBoss"
+    : "castleBattle";
+}
+        
       return currentBattleNumber === 6
         ? "forestBoss"
         : "forestBattle";
 
 case "battle-result-screen":
-  return null;
-    default: return null;
+    return null;
+case "ending-screen":
+    return null;
+default: return null;
   }
 }
 
@@ -100,14 +144,38 @@ function playBgm(key) {
   }
 
   const fullPath = new URL(bgmPath, location.href).href;
-  if (opBgm.src !== fullPath) {
-    opBgm.src = bgmPath;
-    opBgm.currentTime = 0;
+
+opBgm.volume = 0.2;
+opBgm.loop = true;
+
+if (opBgm.src !== fullPath) {
+  const resumeTime =
+    battleBgmResumeTime[key] !== undefined
+      ? battleBgmResumeTime[key]
+      : 0;
+
+  opBgm.src = bgmPath;
+
+  const startBgm = () => {
+    opBgm.currentTime = resumeTime;
+    opBgm.play().catch(() => {});
+  };
+
+  if (opBgm.readyState >= 1) {
+    startBgm();
+  } else {
+    opBgm.addEventListener(
+      "loadedmetadata",
+      startBgm,
+      { once: true }
+    );
   }
 
-  opBgm.volume = 0.2;
-  opBgm.loop = true;
-  opBgm.play().catch(() => {});
+  return;
+}
+
+opBgm.play().catch(() => {}); 
+   
 }
 
 function playOneShotBgm(key, returnToScreen = null) {
@@ -412,8 +480,26 @@ const adventureStages = {
       { name: "カエルナイト", image: "images/kaerunaito.png", level: 7, hp: 110, attack: 14 }
     ],
     boss: { name: "ボルケーノゴーレム", image: "images/volcanogolem.png", level: 9, hp: 150, attack: 16 }
-  }
-};
+  },
+
+   castle: {
+  id: "castle",
+  name: "魔王城",
+  progress: 0,
+  currentHP: 0,
+  battleMonsterId: null,
+  questionMin: 7,
+  questionMax: 9,
+  enemies: [
+    { name: "番犬ケルベロス", image: "images/keruberosu.png", level: 7, hp: 80, attack: 11 },
+    { name: "オーガ料理長", image: "images/oga.png", level: 8, hp: 100, attack: 12 },
+    { name: "ガーゴイル", image: "images/gargoyle.png", level: 8, hp: 110, attack: 14 },
+    { name: "ドクロメイジ", image: "images/dokuro_mage.png", level: 9, hp: 120, attack: 16 },
+    { name: "ダークナイト", image: "images/dark_knight.png", level: 10, hp: 150, attack: 18 }
+  ],
+  boss: { name: "魔王ククデス", image: "images/maou.png", level: 12, hp: 200, attack: 20 }
+}
+};;
 
 let forestProgress = 0;
 let forestCurrentHP = 0;
@@ -427,13 +513,24 @@ let volcanoProgress = 0;
 let volcanoCurrentHP = 0;
 let volcanoBattleMonsterId = null;
 
+let castleProgress = 0;
+let castleCurrentHP = 0;
+let castleBattleMonsterId = null;
+
+// 勇者の試練の解放状態
+let trialUnlocked = false;
+
+// 無限回廊の解放状態
+let infiniteCorridorUnlocked = false;
+
 let currentAdventureStage = "forest";
 
 // 敵図鑑データ
 let enemyDex = {
   forest: {},
   lake: {},
-  volcano: {}
+  volcano: {},
+  castle: {} 
 };
 
 // 敵図鑑に討伐記録を登録
@@ -484,7 +581,7 @@ let battleExpReward = 0;
 
 let returnScreen = "training-screen";
 
-
+let enemyBookReturnScreen = "result-screen";
 
 /* =========================================================
    冒険ステージ共通ヘルパー
@@ -508,7 +605,12 @@ function syncAdventureState(stageId = currentAdventureStage) {
     stage.progress = volcanoProgress;
     stage.currentHP = volcanoCurrentHP;
     stage.battleMonsterId = volcanoBattleMonsterId;
-  }
+  }else if (stageId === "castle") {
+  stage.progress = castleProgress;
+  stage.currentHP = castleCurrentHP;
+  stage.battleMonsterId = castleBattleMonsterId;
+}
+   
   return stage;
 }
 
@@ -551,6 +653,10 @@ function isLakeCleared() {
   return lakeProgress >= 6;
 }
 
+function isVolcanoCleared() {
+  return volcanoProgress >= 6;
+}
+
 /* =========================================================
    DOM
    ========================================================= */
@@ -563,6 +669,31 @@ function el(id) {
 /* =========================================================
    画面切り替え
    ========================================================= */
+
+
+let infiniteCorridorUnlockAudio = null;
+
+function playInfiniteCorridorMagicSound() {
+  if (!bgmEnabled) return;
+
+  try {
+    if (!infiniteCorridorUnlockAudio) {
+      infiniteCorridorUnlockAudio = new Audio(
+        "audio/infinite_corridor_unlock.mp3"
+      );
+      infiniteCorridorUnlockAudio.volume = 0.8;
+    }
+
+    infiniteCorridorUnlockAudio.currentTime = 0;
+
+    infiniteCorridorUnlockAudio.play().catch(error => {
+      console.warn("無限回廊の解放音を再生できませんでした:", error);
+    });
+  } catch (error) {
+    console.warn("無限回廊の解放音の再生に失敗しました:", error);
+  }
+}
+
 
 function showScreen(id) {
 
@@ -599,6 +730,10 @@ function showScreen(id) {
 
 
   target.classList.add("active");
+
+   if (id === "infinite-corridor-unlock-screen") {
+  playInfiniteCorridorMagicSound();
+}
 
 updateBgmForScreen(id)
  
@@ -641,13 +776,8 @@ function updateBottomMenu(screenId) {
     return;
   }
 
+  menu.classList.remove("hidden");
 
-  if (screenId === "title-screen") {
-    menu.classList.add("hidden");
-  }
-  else {
-    menu.classList.remove("hidden");
-  }
 }
 
 
@@ -724,11 +854,40 @@ function requiredExp(level, stage) {
    セーブ
    ========================================================= */
 
+/* =========================================================
+   勇者の試練：バナー表示制御
+   ========================================================= */
+
+function updateTrialAreaAvailability() {
+  const trialArea = document.getElementById("trial-area");
+
+  if (!trialArea) return;
+
+  trialArea.hidden = !trialUnlocked;
+}
+
+
+/* 無限回廊：バナー表示制御 */
+function updateInfiniteCorridorAreaAvailability() {
+  const area = document.getElementById(
+    "infinite-corridor-area"
+  );
+
+  if (!area) return;
+
+  area.hidden = !infiniteCorridorUnlocked;
+     const titlesButton = document.getElementById(
+    "infinite-corridor-titles-button"
+  );
+  if (titlesButton) titlesButton.hidden = !infiniteCorridorUnlocked;
+}
+
 function saveGame() {
 
   syncAdventureState("forest");
   syncAdventureState("lake");
   syncAdventureState("volcano"); 
+   syncAdventureState("castle");
 
   const data = {
 
@@ -751,8 +910,15 @@ function saveGame() {
     },
 
     adventureUnlocked,
-
+    
+   trialUnlocked,      
+infiniteCorridorUnlocked,
+     
     battleWins,
+
+     infiniteCorridorBestFloor,
+
+     infiniteCorridorTitles: [...infiniteCorridorTitles],
 
     forestProgress,
 
@@ -765,6 +931,13 @@ function saveGame() {
 　　volcanoProgress,
 　　volcanoCurrentHP,
 　　volcanoBattleMonsterId,
+    castleProgress,
+castleCurrentHP,
+castleBattleMonsterId, 
+
+infiniteCorridorFloor,
+infiniteCorridorMissCount,
+     
     enemyDex: { ...enemyDex } 
      
   };
@@ -874,12 +1047,27 @@ function loadGame() {
     adventureUnlocked =
       data.adventureUnlocked === true;
 
-
+trialUnlocked =
+      data.trialUnlocked === true;
+ infiniteCorridorUnlocked =
+      data.infiniteCorridorUnlocked === true;
+     
     battleWins =
       Number(
         data.battleWins
       ) || 0;
 
+     // 無限回廊：最高到達階を読み込む
+infiniteCorridorBestFloor =
+  Number(
+    data.infiniteCorridorBestFloor
+  ) || 1;
+
+     // 無限回廊：獲得済み称号を読み込む
+infiniteCorridorTitles =
+  Array.isArray(data.infiniteCorridorTitles)
+    ? data.infiniteCorridorTitles
+    : [];
 
     forestProgress =
       Number(
@@ -931,6 +1119,25 @@ volcanoProgress =
       data.volcanoBattleMonsterId
         ? Number(data.volcanoBattleMonsterId)
         : null;
+
+     castleProgress =
+  Math.max(0, Math.min(6, Number(data.castleProgress) || 0));
+
+castleCurrentHP =
+  Number(data.castleCurrentHP) || 0;
+
+castleBattleMonsterId =
+  data.castleBattleMonsterId
+    ? Number(data.castleBattleMonsterId)
+    : null;
+
+// 無限回廊：中断データを読み込む
+infiniteCorridorFloor =
+  Number(data.infiniteCorridorFloor) || 1;
+
+infiniteCorridorMissCount =
+  Number(data.infiniteCorridorMissCount) || 0;
+     
     if (
       data.enemyDex &&
       typeof data.enemyDex === "object"
@@ -938,7 +1145,8 @@ volcanoProgress =
       enemyDex = {
         forest: data.enemyDex.forest || {},
         lake: data.enemyDex.lake || {},
-        volcano: data.enemyDex.volcano || {}
+        volcano: data.enemyDex.volcano || {},
+  castle: data.enemyDex.castle || {}
       };
     } 
      
@@ -3202,11 +3410,93 @@ function renderMonsterBook() {
 
     }
   );
-
-
-  updateWorldStats();
+ 
 }
 
+/* =========================================================
+   敵図鑑
+   ========================================================= */
+
+function renderEnemyBook(targetId = "enemy-list") {
+  const list = el(targetId);
+
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  Object.values(adventureStages).forEach(stage => {
+    const enemies = [
+      ...stage.enemies,
+      stage.boss
+    ];
+
+    enemies.forEach(enemy => {
+      const record =
+        enemyDex[stage.id]?.[enemy.name];
+
+      const discovered =
+        record?.discovered === true;
+
+      const defeats =
+        Number(record?.defeats) || 0;
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        `monster-card ${
+          discovered ? "caught" : "unknown"
+        }`;
+
+      if (discovered) {
+        card.innerHTML = `
+          <div class="monster-number">
+ 　　　　　</div>
+          <div class="monster-icon">
+            <img
+              src="${enemy.image}"
+              alt="${enemy.name}"
+              class="book-monster-image"
+            >
+          </div>
+
+          <div class="monster-info">
+            <h2>${enemy.name}</h2>
+
+            <div class="monster-meta">
+              <span>Lv.${enemy.level}</span>
+              <span>HP ${enemy.hp}</span>
+              <span>討伐数 ${defeats}</span>
+            </div>
+
+            <small>${stage.name}</small>
+          </div>
+        `;
+      } else {
+        card.innerHTML = `
+        <div class="monster-number"></div>
+     <div class="monster-icon">
+            <div class="unknown-monster">?</div>
+          </div>
+
+          <div class="monster-info">
+            <h2>？？？？</h2>
+
+            <div class="monster-meta">
+              <span>未発見</span>
+            </div>
+
+            <p>冒険でこの敵を倒すと登録される。</p>
+
+            <small>${stage.name}</small>
+          </div>
+        `;
+      }
+
+      list.appendChild(card);
+    });
+  });
+}
 
 /* =========================================================
    図鑑を開く
@@ -3225,46 +3515,6 @@ function openBook(fromScreen) {
     "monster-book-screen"
   );
 }
-
-
-/* =========================================================
-   ワールド情報
-   ========================================================= */
-
-function updateWorldStats() {
-
-  const playerLevel =
-    el("player-level");
-
-
-  if (playerLevel) {
-
-    /*
-       現段階では
-       クリア段数を冒険レベルとして表示
-    */
-
-    playerLevel.textContent =
-      `Lv.${Math.max(
-        1,
-        clearedStages.length
-      )}`;
-
-  }
-
-
-  const coins =
-    el("player-coins");
-
-
-  if (coins) {
-
-    coins.textContent =
-      battleWins * 5;
-
-  }
-}
-
 
 /* =========================================================
    ワールドマップ
@@ -3313,11 +3563,34 @@ function updateVolcanoAreaAvailability() {
   }
 }
 
+function updateCastleAreaAvailability() {
+  const area = el("castle-area");
+
+  if (!area) {
+    return;
+  }
+
+  const unlocked = isVolcanoCleared();
+
+  area.disabled = !unlocked;
+  area.classList.toggle("locked-area", !unlocked);
+
+  const small = area.querySelector("small");
+
+  if (small) {
+    small.textContent = unlocked
+      ? "魔王城へ挑戦！"
+      : "炎のカッケ山クリアで解放";
+  }
+}
+
 function openWorld() {
 
-  updateWorldStats();
   updateLakeAreaAvailability();
   updateVolcanoAreaAvailability(); 
+  updateCastleAreaAvailability(); 
+   updateTrialAreaAvailability();
+   updateInfiniteCorridorAreaAvailability();
   updateLakeMap();
 
   showScreen(
@@ -3529,6 +3802,8 @@ function updateForestMap() {
    森のバトル開始
    ========================================================= */
 
+let forestContinuingBattle = false;
+
 function startForestBattle(
   battleNumber
 ) {
@@ -3591,6 +3866,13 @@ function startForestBattle(
   currentBattleNumber =
     number;
 
+   /*
+   バトル1から開始するときは
+   通常戦BGMを最初から
+*/
+if (number === 1) {
+  battleBgmResumeTime.forestBattle = 0;
+}
 
   /*
      モンスターが変わった場合は
@@ -3616,10 +3898,11 @@ function startForestBattle(
   */
 
   if (
+    !forestContinuingBattle ||
     number === 1 ||
     monsterChanged ||
     forestCurrentHP <= 0
-  ) {
+) {
 
     const data =
       getMonsterData(
@@ -3641,6 +3924,7 @@ function startForestBattle(
 
   }
 
+  forestContinuingBattle = false; 
 
   /*
    敵決定
@@ -3681,9 +3965,13 @@ function showBossWarning() {
   warning.className = "boss-warning";
   warning.textContent = "⚠️ WARNING ⚠️";
 
-  enemyImage.appendChild(warning);
+ const enemyWrapper = enemyImage.closest(".battle-enemy-wrapper");
 
-  enemyImage.style.position = "relative";
+if (!enemyWrapper) return;
+
+enemyWrapper.appendChild(warning);
+
+enemyWrapper.style.position = "relative";
 
   warning.style.position = "absolute";
   warning.style.top = "50%";
@@ -3783,7 +4071,72 @@ function setupBattle() {
 
   }
 
+/*   
+ ステージ別バトル背景
+*/
+const battleScreen =
+  document.getElementById("battle-screen");
 
+if (battleScreen) {
+  const isMobileBackground =
+    window.matchMedia("(max-width: 500px)").matches;
+
+  if (currentAdventureStage === "lake") {
+    battleScreen.style.backgroundImage =
+      'url("images/battle_lake.png")';
+
+    battleScreen.classList.add("lake-battle");
+    battleScreen.classList.remove(
+      "volcano-battle",
+      "castle-battle"
+    );
+  }
+  else if (currentAdventureStage === "volcano") {
+    battleScreen.style.backgroundImage = isMobileBackground
+      ? 'url("images/battle_volcano_sp.png")'
+      : 'url("images/battle_volcano.png")';
+
+    battleScreen.classList.add("volcano-battle");
+    battleScreen.classList.remove(
+      "lake-battle",
+      "castle-battle"
+    );
+  }
+  else if (currentAdventureStage === "castle") {
+    if (currentBattleNumber === 6) {
+      battleScreen.style.backgroundImage = isMobileBackground
+        ? 'url("images/battle_castle_boss_sp.png")'
+        : 'url("images/battle_castle_boss.png")';
+
+      battleScreen.classList.add("castle-boss-battle");
+    } else {
+      battleScreen.style.backgroundImage = isMobileBackground
+        ? 'url("images/battle_castle_sp.png")'
+        : 'url("images/battle_castle.png")';
+
+      battleScreen.classList.remove("castle-boss-battle");
+    }
+
+    battleScreen.classList.add("castle-battle");
+    battleScreen.classList.remove(
+      "lake-battle",
+      "volcano-battle"
+    );
+  }
+  else {
+    battleScreen.style.backgroundImage =
+      'url("images/battle_forest.png")';
+
+    battleScreen.classList.remove(
+      "lake-battle",
+      "volcano-battle",
+      "castle-battle",
+      "castle-boss-battle"
+    );
+  }
+}
+
+   
   /*
      味方HP
 
@@ -3794,10 +4147,14 @@ function setupBattle() {
     data.hp;
 
 
-  const currentStageHP =
-    currentAdventureStage === "lake"
-      ? lakeCurrentHP
-      : forestCurrentHP;
+const currentStageHP =
+  currentAdventureStage === "castle"
+    ? castleCurrentHP
+    : currentAdventureStage === "volcano"
+      ? volcanoCurrentHP
+      : currentAdventureStage === "lake"
+        ? lakeCurrentHP
+        : forestCurrentHP;
 
   /*
      ステージ内の連戦ではHPを持ち越す。
@@ -3869,6 +4226,13 @@ function setupBattle() {
   const enemyImage =
     el("enemy-image");
 
+  /* バトル開始時にククデスのセリフを非表示 */
+const kukudesLastMessage =
+    el("kukudes-last-message");
+
+if (kukudesLastMessage) {
+    kukudesLastMessage.style.display = "none";
+} 
 
   if (enemyName) {
 
@@ -3892,14 +4256,15 @@ function setupBattle() {
       currentWildMonster.image
     ) {
 
-      enemyImage.innerHTML = `
-
-        <img
-          src="${currentWildMonster.image}"
-          alt="${currentWildMonster.name}"
-        >
-
-      `;
+     enemyImage.innerHTML = `
+    <img
+        src="${currentWildMonster.image}"
+        alt="${currentWildMonster.name}"
+        ${currentWildMonster.name === "魔王ククデス"
+            ? 'style="width:115px; height:115px;"'
+            : ""}
+    >
+`;
 
     }
 
@@ -3980,40 +4345,35 @@ function setupBattle() {
 const isLake =
   currentAdventureStage === "lake";
 
+const isCastle =
+  currentAdventureStage === "castle";  
+
 battleMessage(
   currentBattleNumber === 6
     ? (
-        isVolcano
-          ? "⚠️ 火山のボスが現れた！"
-          : isLake
-            ? "⚠️ 湖底の主が現れた！"
-            : "⚠️ 森のボスが現れた！"
+        isCastle
+          ? "⚠️ 魔王がその姿を現した！"
+          : isVolcano
+            ? "⚠️ 火山の守護者が現れた！"
+            : isLake
+              ? "⚠️ 湖畔の主が現れた！"
+              : "⚠️ 森のボスが現れた！"
       )
     : `⚔️ バトル${currentBattleNumber}！九九で攻撃しよう！`
 );
 
 const battleBackButton =
-  el("battle-back-button");
+    el("battle-back-button");
 
 if (battleBackButton) {
-  battleBackButton.textContent =
-    isVolcano
-      ? "← カッケ山のマップへ"
-      : isLake
-        ? "← 湖のマップへ"
-        : "← 森のマップへ";
+    battleBackButton.textContent = "← マップへ";
 }
 
 const battleReturnButton =
-  el("battle-return-forest");
+    el("battle-return-forest");
 
 if (battleReturnButton) {
-  battleReturnButton.textContent =
-    isVolcano
-      ? "🌋 カッケ山のマップへ"
-      : isLake
-        ? "🌊 湖のマップへ"
-        : "🌳 森のマップへ";
+    battleReturnButton.textContent = "← マップへ";
 }
 
 
@@ -4137,82 +4497,1295 @@ function updateBattleHP() {
   }
 }
 
+/* =========================================
+   通常バトル・問題重複防止
+========================================= */
 
+// ステージごとの問題セットと出題位置を保持
+const battleQuestionPools = {};
+
+// 問題の並びをシャッフル
+function shuffleBattleQuestions(questions) {
+  for (let i = questions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [questions[i], questions[j]] =
+      [questions[j], questions[i]];
+  }
+
+  return questions;
+}
+
+// 次に出題する掛け算を取得
+function getNextBattleQuestion() {
+  const stageId = currentAdventureStage;
+  const stage = getAdventureStage(stageId);
+
+  let pool = battleQuestionPools[stageId];
+
+  // 初回、または全問出題済みの場合
+  if (!pool || pool.index >= pool.questions.length) {
+    const previousQuestion = pool?.lastQuestion ?? null;
+    const questions = [];
+
+    for (
+      let a = stage.questionMin;
+      a <= stage.questionMax;
+      a++
+    ) {
+      for (let b = 1; b <= 9; b++) {
+        questions.push({ a, b });
+      }
+    }
+
+    shuffleBattleQuestions(questions);
+
+    // 前の周回の最後と次の周回の最初が
+    // 同じ問題になることを防ぐ
+    if (previousQuestion && questions.length > 1) {
+      const first = questions[0];
+
+      if (
+        first.a === previousQuestion.a &&
+        first.b === previousQuestion.b
+      ) {
+        [questions[0], questions[1]] =
+          [questions[1], questions[0]];
+      }
+    }
+
+    pool = {
+      questions,
+      index: 0,
+      lastQuestion: previousQuestion
+    };
+
+    battleQuestionPools[stageId] = pool;
+  }
+
+  const question = pool.questions[pool.index];
+
+  pool.index++;
+  pool.lastQuestion = question;
+
+  return question;
+}
+
+/* ========================================
+   勇者の試練：専用九九問題生成
+======================================== */
+
+// 勇者の試練の出題履歴
+let trialQuestionPool = [];
+let trialQuestionIndex = 0;
+let trialLastQuestion = null;
+let trialQuestionBattleNumber = null;
+
+// 次の穴埋め九九問題を取得
+function getNextTrialQuestion(battleNumber) {
+
+  // 戦闘番号は1～10
+  if (
+    !Number.isInteger(battleNumber) ||
+    battleNumber < 1 ||
+    battleNumber > 10
+  ) {
+    return null;
+  }
+
+  // 戦闘が変わったら問題セットを初期化
+  if (trialQuestionBattleNumber !== battleNumber) {
+
+    trialQuestionPool = [];
+    trialQuestionIndex = 0;
+    trialLastQuestion = null;
+    trialQuestionBattleNumber = battleNumber;
+
+  }
+
+  // 全問出題済みなら新しい問題セットを作る
+  if (trialQuestionIndex >= trialQuestionPool.length) {
+
+    const questions = [];
+
+    // 1～9戦目：戦闘番号と同じ段
+    // 10戦目：2～9の段
+    const minDan = battleNumber === 10 ? 2 : battleNumber;
+    const maxDan = battleNumber === 10 ? 9 : battleNumber;
+
+    for (let a = minDan; a <= maxDan; a++) {
+
+      for (let b = 1; b <= 9; b++) {
+
+        questions.push({
+          a: a,
+          b: b,
+          answer: a,
+          result: a * b
+        });
+
+      }
+
+    }
+
+    // 問題をランダムに並べ替える
+    shuffleBattleQuestions(questions);
+
+    // 前の周回の最後と
+    // 次の周回の最初の重複を防ぐ
+    if (trialLastQuestion && questions.length > 1) {
+
+      const first = questions[0];
+
+      if (
+        first.a === trialLastQuestion.a &&
+        first.b === trialLastQuestion.b
+      ) {
+
+        const swapIndex = questions.findIndex(
+          q =>
+            q.a !== trialLastQuestion.a ||
+            q.b !== trialLastQuestion.b
+        );
+
+        if (swapIndex > 0) {
+
+          [questions[0], questions[swapIndex]] =
+            [questions[swapIndex], questions[0]];
+
+        }
+
+      }
+
+    }
+
+    trialQuestionPool = questions;
+    trialQuestionIndex = 0;
+
+  }
+
+  // 次の問題を取り出す
+  const question = trialQuestionPool[trialQuestionIndex];
+
+  trialQuestionIndex++;
+  trialLastQuestion = question;
+
+  return question;
+}
+
+/* ========================================
+   勇者の試練：バトル状態管理
+======================================== */
+
+// 現在の戦闘番号
+let trialBattleNumber = 1;
+
+// 現在の問題の正解
+let trialCorrectAnswer = null;
+
+// 現在の敵に対する連続正解数
+let trialConsecutiveCorrect = 0;
+
+// 回答処理中の連打防止
+let trialAnswerLocked = false;
+
+/* =========================================
+   無限回廊：バトル状態管理
+========================================= */
+
+// 現在の階層
+let infiniteCorridorFloor = 1;
+
+// 無限回廊：獲得済み称号
+let infiniteCorridorTitles = [];
+
+// 無限回廊：称号の獲得条件
+const infiniteCorridorTitleMilestones = [
+  { floor: 10, title: "九九の挑戦者" },
+  { floor: 30, title: "九九の探究者" },
+  { floor: 50, title: "九九の熟練者" },
+  { floor: 80, title: "九九の覇者" },
+  { floor: 100, title: "九九マスター" }
+];
+
+// 無限回廊：称号獲得ポップアップを表示
+function showInfiniteCorridorTitlePopup(titleData) {
+
+  const popup = document.getElementById(
+    "infinite-corridor-title-popup"
+  );
+
+  const name = document.getElementById(
+    "infinite-corridor-title-name"
+  );
+
+  const floor = document.getElementById(
+    "infinite-corridor-title-floor"
+  );
+
+  if (!popup || !name || !floor) return;
+
+  name.textContent = titleData.title;
+  floor.textContent = `${titleData.floor}階到達！`;
+
+  popup.hidden = false;
+}
+
+// 無限回廊：新しい称号を獲得
+function checkInfiniteCorridorTitle() {
+
+  const titleData = infiniteCorridorTitleMilestones.find(
+    item =>
+      item.floor === infiniteCorridorFloor &&
+      !infiniteCorridorTitles.includes(item.floor)
+  );
+
+  if (!titleData) return false;
+
+  infiniteCorridorTitles.push(titleData.floor);
+
+  saveGame();
+
+  showInfiniteCorridorTitlePopup(titleData);
+
+  return true;
+}
+
+// 無限回廊：最高到達階
+let infiniteCorridorBestFloor = 1;
+
+// 不正解数
+let infiniteCorridorMissCount = 0;
+
+// 直前に出現した通常モンスター
+let infiniteCorridorLastMonster = null;
+
+// 直前に出現したランダムボス
+let infiniteCorridorLastBoss = null;
+
+// 無限回廊の固定ボス名
+const infiniteCorridorBossNames = [
+  "ナックルベア",
+  "ククッシー",
+  "ボルケーノゴーレム",
+  "魔王ククデス",
+  "ホワイトナックル",
+  "魔底のヌシ",
+  "マウンテンゴーレム",
+  "ネオククデス",
+  "魔獣ククデーモン",
+  "にごちゃん"
+];
+
+// 無限回廊：固定ボスデータ
+const infiniteCorridorBosses = {
+  10: {
+    name: "ナックルベア",
+    image: "images/morinosyugosya.png"
+  },
+  20: {
+    name: "ククッシー",
+    image: "images/kukusshii.png"
+  },
+  30: {
+    name: "ボルケーノゴーレム",
+    image: "images/volcanogolem.png"
+  },
+  40: {
+    name: "魔王ククデス",
+    image: "images/maou.png"
+  },
+  50: {
+    name: "ホワイトナックル",
+    image: "images/white_nakkuru.png"
+  },
+  60: {
+    name: "魔底のヌシ",
+    image: "images/mateinonushi.png"
+  },
+  70: {
+    name: "マウンテンゴーレム",
+    image: "images/mountain_golem.png"
+  },
+  80: {
+    name: "ネオククデス",
+    image: "images/neo_kukudes.png"
+  },
+  90: {
+    name: "魔獣ククデーモン",
+    image: "images/kuku_demon.png"
+  },
+  100: {
+    name: "にごちゃん",
+    image: "images/nigochan.png"
+  }
+};
+
+// 無限回廊：通常モンスター候補
+const infiniteCorridorMonsters = [
+  ...adventureStages.forest.enemies,
+  ...adventureStages.lake.enemies,
+  ...adventureStages.volcano.enemies,
+  ...adventureStages.castle.enemies
+].filter(monster =>
+  !infiniteCorridorBossNames.includes(monster.name)
+);
+
+// 無限回廊：通常モンスターをランダム選択
+function getInfiniteCorridorRandomMonster() {
+
+  // 直前と同じモンスターを候補から除外
+  const candidates = infiniteCorridorMonsters.filter(
+    monster => monster.name !== infiniteCorridorLastMonster?.name
+  );
+
+  // 候補からランダムに1体選択
+  const randomMonster =
+    candidates[Math.floor(Math.random() * candidates.length)];
+
+  // 今回のモンスターを記録
+  infiniteCorridorLastMonster = randomMonster;
+
+  return randomMonster;
+}
+
+// 無限回廊：階層に応じたモンスターを選択
+function getInfiniteCorridorMonsterForFloor() {
+
+  const floor = infiniteCorridorFloor;
+
+  // 10階以外は通常モンスター
+  if (floor % 10 !== 0) {
+    return getInfiniteCorridorRandomMonster();
+  }
+
+  // 100階ごとは必ず「にごちゃん」
+  if (floor % 100 === 0) {
+    return infiniteCorridorBosses[100];
+  }
+
+  // 100階未満は決められた固定ボス
+  if (floor < 100) {
+    return infiniteCorridorBosses[floor];
+  }
+
+  // 110階以降の10階ごとは歴代ボスからランダム
+  const bossCandidates = Object.entries(infiniteCorridorBosses)
+    .filter(([key]) => Number(key) !== 100)
+    .map(([, boss]) => boss)
+    .filter(boss =>
+      boss.name !== infiniteCorridorLastBoss?.name
+    );
+
+  const randomBoss =
+    bossCandidates[
+      Math.floor(Math.random() * bossCandidates.length)
+    ];
+
+  // 今回のボスを記録
+  infiniteCorridorLastBoss = randomBoss;
+
+  return randomBoss;
+}
+
+// 回答処理中の連打防止
+let infiniteCorridorAnswerLocked = false;
+
+// 無限回廊からのゲームオーバー判定
+let isInfiniteCorridorGameOver = false;
+
+function updateInfiniteCorridorStatus() {
+    const floorElement = document.getElementById(
+        "infinite-corridor-floor"
+    );
+
+const bestFloorElement = document.getElementById(
+  "infinite-corridor-best-floor"
+);
+   
+    const missElement = document.getElementById(
+        "infinite-corridor-miss-count"
+    );
+
+    if (floorElement) {
+        floorElement.textContent =
+            `FLOOR ${infiniteCorridorFloor}`;
+    }
+
+if (bestFloorElement) {
+  bestFloorElement.textContent =
+    `BEST ${infiniteCorridorBestFloor}`;
+}
+   
+    if (missElement) {
+        missElement.textContent =
+            `${infiniteCorridorMissCount} / 3`;
+    }
+}
+
+/* ========================================
+   勇者の試練：勇者HP管理
+======================================== */
+
+const trialHeroMaxHP = 100;
+let trialHeroHP = trialHeroMaxHP;
+
+function updateTrialHeroHP() {
+
+  const hpText =
+    document.getElementById("trial-hero-hp-text");
+
+  const hpFill =
+    document.getElementById("trial-hero-hp-fill");
+
+  if (hpText) {
+    hpText.textContent =
+      `${trialHeroHP} / ${trialHeroMaxHP}`;
+  }
+
+  if (hpFill) {
+    hpFill.style.width =
+      `${(trialHeroHP / trialHeroMaxHP) * 100}%`;
+  }
+
+}
+
+/* ========================================
+   勇者の試練：撃破に必要な連続正解数
+======================================== */
+
+const trialRequiredCorrect = [
+  3, 3, 3, 5, 5, 5, 5, 5, 8, 10
+];
+
+/* ========================================
+   勇者の試練：モンスターデータ
+======================================== */
+
+const trialMonsters = [
+  { name: "ダークスライム", image: "images/dark_slime.png" },
+  { name: "毒アワモン", image: "images/doku_awamon.png" },
+  { name: "マッドゾンビ", image: "images/mud_zombie.png" },
+  { name: "クロベロス", image: "images/keruberosu.png" },
+  { name: "ホワイトナックル", image: "images/white_nakkuru.png" },
+  { name: "魔底のヌシ", image: "images/mateinonushi.png" },
+  { name: "マウンテンゴーレム", image: "images/mountain_golem.png" },
+  { name: "ドクロソーサラー", image: "images/dokuro_Sorcerer.png" },
+  { name: "ネオククデス", image: "images/neo_kukudes.png" },
+  { name: "魔獣ククデーモン", image: "images/kuku_demon.png" }
+];
+
+/* ========================================
+   勇者の試練：敵の表示を切り替える
+======================================== */
+
+function updateTrialMonsterDisplay(battleNumber) {
+
+  // 戦闘番号からモンスター情報を取得
+  const monster = trialMonsters[battleNumber - 1];
+
+  if (!monster) return;
+
+  // 敵の名前を変更
+  const nameElement =
+    document.getElementById("trial-enemy-name");
+
+  if (nameElement) {
+    nameElement.textContent = monster.name;
+  }
+
+  // 敵の画像を変更
+  const imageElement =
+    document.querySelector("#trial-enemy-image img");
+
+  if (imageElement) {
+    imageElement.src = monster.image;
+    imageElement.alt = monster.name;
+  }
+
+  // 敵のハート数を設定
+  const requiredCorrect =
+    trialRequiredCorrect[battleNumber - 1];
+
+  updateTrialEnemyHearts(
+    requiredCorrect,
+    requiredCorrect
+  );
+
+}
+
+/* ========================================
+   勇者の試練：4択回答ボタン生成
+======================================== */
+
+function createTrialBattleAnswers(correctAnswer) {
+
+  const container =
+    document.getElementById("trial-battle-answers");
+
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  // 正解を除く1～9の数字から不正解候補を作る
+  const wrongAnswers = [];
+
+  for (let n = 1; n <= 9; n++) {
+    if (n !== correctAnswer) {
+      wrongAnswers.push(n);
+    }
+  }
+
+  // 不正解候補をシャッフル
+  shuffleBattleQuestions(wrongAnswers);
+
+  // 正解1つ＋不正解3つ
+  const choices = [
+    correctAnswer,
+    ...wrongAnswers.slice(0, 3)
+  ];
+
+  // 選択肢をシャッフル
+  shuffleBattleQuestions(choices);
+
+  choices.forEach(value => {
+
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = "battle-answer";
+    button.textContent = value;
+
+// 勇者の試練専用の回答判定
+button.addEventListener("click", () => {
+  if (trialAnswerLocked) return;
+
+  checkTrialBattleAnswer(value, correctAnswer);
+});
+
+// 作成したボタンを画面に追加
+container.appendChild(button);
+
+  });
+
+}
+
+/* ========================================
+   無限回廊：4択回答ボタン生成
+======================================== */
+
+function createInfiniteCorridorAnswers(correctAnswer) {
+
+  const container =
+    document.getElementById("infinite-corridor-answers");
+
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  // 正解を除く1～9の数字から不正解候補を作る
+  const wrongAnswers = [];
+
+  for (let n = 1; n <= 9; n++) {
+    if (n !== correctAnswer) {
+      wrongAnswers.push(n);
+    }
+  }
+
+  // 不正解候補をシャッフル
+  shuffleBattleQuestions(wrongAnswers);
+
+  // 正解1つ＋不正解3つ
+  const choices = [
+    correctAnswer,
+    ...wrongAnswers.slice(0, 3)
+  ];
+
+  // 選択肢をシャッフル
+  shuffleBattleQuestions(choices);
+
+  choices.forEach(value => {
+
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.className = "battle-answer";
+    button.textContent = value;
+
+    // 無限回廊専用の回答判定
+    button.addEventListener("click", () => {
+      if (infiniteCorridorAnswerLocked) return;
+
+      checkInfiniteCorridorAnswer(value, correctAnswer);
+    });
+
+    // 作成したボタンを画面に追加
+    container.appendChild(button);
+
+  });
+
+}
+
+/* ========================================
+   無限回廊：問題生成・表示
+======================================== */
+
+function startInfiniteCorridorQuestion() {
+
+  // 現在の階層に応じたモンスターを選択
+const monster = getInfiniteCorridorMonsterForFloor();
+
+  // モンスター名を更新
+  const nameElement =
+    document.getElementById("infinite-corridor-enemy-name");
+
+  if (nameElement) {
+    nameElement.textContent = monster.name;
+  }
+
+  // モンスター画像を更新
+  const imageElement =
+    document.querySelector(
+      "#infinite-corridor-enemy-image img"
+    );
+
+  if (imageElement) {
+    imageElement.src = monster.image;
+    imageElement.alt = monster.name;
+  }
+   
+  // 1～9の段からランダムに問題を作成
+  const a = Math.floor(Math.random() * 9) + 1;
+  const b = Math.floor(Math.random() * 9) + 1;
+
+  const questionElement =
+  document.getElementById("infinite-corridor-question");
+
+if (!questionElement) return;
+
+// 左右どちらを隠すかランダムに決定
+const hideLeft = Math.random() < 0.5;
+
+let correctAnswer;
+
+if (hideLeft) {
+
+  // 左側を隠す
+  correctAnswer = a;
+  questionElement.textContent =
+    `？ × ${b} ＝ ${a * b}`;
+
+} else {
+
+  // 右側を隠す
+  correctAnswer = b;
+  questionElement.textContent =
+    `${a} × ？ ＝ ${a * b}`;
+
+}
+  // 回答ボタンを生成
+  createInfiniteCorridorAnswers(correctAnswer);
+}
+
+/* ========================================
+   無限回廊：回答判定
+======================================== */
+
+function checkInfiniteCorridorAnswer(selectedAnswer, correctAnswer) {
+
+  // 回答処理中は連打を防止
+  if (infiniteCorridorAnswerLocked) return;
+
+  infiniteCorridorAnswerLocked = true;
+
+  if (selectedAnswer === correctAnswer) {
+
+    // 正解：1階層進む
+    infiniteCorridorFloor++;
+
+     // 最高到達階を更新
+  if (infiniteCorridorFloor > infiniteCorridorBestFloor) {
+    infiniteCorridorBestFloor = infiniteCorridorFloor;
+  }  
+
+  } else {
+
+  // 不正解：ミスを1つ追加
+  infiniteCorridorMissCount++;
+
+  // ダメージ演出
+  const battleScreen =
+    document.getElementById("infinite-corridor-battle-screen");
+
+  if (battleScreen) {
+  battleScreen.classList.remove(
+    "damage-flash",
+    "damage-shake"
+  );
+
+  // 毎回アニメーションを確実に再生
+  void battleScreen.offsetWidth;
+
+  battleScreen.classList.add(
+    "damage-flash",
+    "damage-shake"
+  );
+
+  // 演出終了後にクラスを外す
+  setTimeout(() => {
+    battleScreen.classList.remove(
+      "damage-flash",
+      "damage-shake"
+    );
+  }, 250);
+}
+
+}
+
+ // 画面の表示を更新
+updateInfiniteCorridorStatus();
+
+// 不正解が3回に達したらゲームオーバー
+if (infiniteCorridorMissCount >= 3) {
+
+  // 回答ボタンを無効化
+  document
+    .querySelectorAll("#infinite-corridor-answers button")
+    .forEach(button => {
+      button.disabled = true;
+    });
+
+  // 無限回廊からのゲームオーバーであることを記録
+isInfiniteCorridorGameOver = true;
+
+// 1秒後にゲームオーバー画面へ
+setTimeout(() => {
+  showScreen("trial-gameover-screen");
+}, 1000);
+  return;
+}
+
+// 新しい称号を獲得した場合はポップアップを表示して停止
+if (
+  selectedAnswer === correctAnswer &&
+  checkInfiniteCorridorTitle()
+) {
+  return;
+}
+
+// 次の問題を表示
+startInfiniteCorridorQuestion();
+
+// ロック解除
+infiniteCorridorAnswerLocked = false;
+}
+
+/* ========================================
+   勇者の試練：敵のハート表示更新
+======================================== */
+
+function updateTrialEnemyHearts(maxHP, remainingHP) {
+
+  const container =
+    document.getElementById("trial-enemy-hearts");
+
+  if (!container) return;
+
+  // ハートの表示だけ更新
+  container.innerHTML = "";
+
+  for (let i = 0; i < maxHP; i++) {
+
+    const heart = document.createElement("span");
+
+   // ハートの形は共通で、色だけ切り替える
+heart.textContent = "♥";
+
+heart.style.color =
+  i < remainingHP ? "#ff2020" : "#ffffff";
+
+container.appendChild(heart);
+  }
+
+  container.setAttribute(
+    "aria-label",
+    `敵の残りライフ ${remainingHP}`
+  );
+}
+
+/* ========================================
+   勇者の試練：回答判定
+======================================== */
+
+function checkTrialBattleAnswer(selectedAnswer, correctAnswer) {
+
+  // 連打防止
+  if (trialAnswerLocked) return;
+  trialAnswerLocked = true;
+
+  const messageElement =
+    document.getElementById("trial-battle-message");
+
+  const requiredCorrect =
+    trialRequiredCorrect[trialBattleNumber - 1];
+
+  // 正誤判定
+  if (selectedAnswer === correctAnswer) {
+
+    trialConsecutiveCorrect++;
+
+    if (messageElement) {
+      messageElement.textContent = `${trialMonsters[trialBattleNumber - 1].name}にダメージ！`;
+    }
+
+  } else {
+
+  // 不正解なら連続正解数をリセット
+  trialConsecutiveCorrect = 0;
+
+  // 勇者が25ダメージを受ける
+  trialHeroHP = Math.max(0, trialHeroHP - 25);
+
+  // 勇者HPの表示を更新
+  updateTrialHeroHP();
+
+  // ダメージ演出
+  const battleScreen =
+    document.getElementById("trial-battle-screen");
+
+  if (battleScreen) {
+    battleScreen.classList.remove(
+      "damage-flash",
+      "damage-shake"
+    );
+
+    // 毎回アニメーションを確実に再生
+    void battleScreen.offsetWidth;
+
+    battleScreen.classList.add(
+      "damage-flash",
+      "damage-shake"
+    );
+
+    // 演出終了後にクラスを外す
+    setTimeout(() => {
+      battleScreen.classList.remove(
+        "damage-flash",
+        "damage-shake"
+      );
+    }, 250);
+  }
+     
+   // 勇者HPが0になった場合
+if (trialHeroHP <= 0) {
+
+  // 回答受付を停止
+  trialAnswerLocked = true;
+
+  // 勇者の敗北を表示
+  if (messageElement) {
+    messageElement.textContent =
+      "勇者は力尽きた……";
+  }
+
+  // 回答ボタンを無効化
+  document
+    .querySelectorAll("#trial-battle-answers button")
+    .forEach(button => {
+      button.disabled = true;
+    });
+
+  // 1秒後に専用ゲームオーバー画面へ
+  setTimeout(() => {
+    showScreen("trial-gameover-screen");
+  }, 1000);
+
+  return;
+}  
+
+  if (messageElement) {
+    messageElement.textContent =
+      `${trialMonsters[trialBattleNumber - 1].name}は全回復！ 勇者は25ダメージ！`;
+  }
+
+}
+
+  // ハート表示を更新
+  const remainingHP =
+    Math.max(0, requiredCorrect - trialConsecutiveCorrect);
+
+  updateTrialEnemyHearts(requiredCorrect, remainingHP);
+
+  // 回答ボタンを無効化
+  document
+    .querySelectorAll("#trial-battle-answers button")
+    .forEach(button => {
+      button.disabled = true;
+    });
+
+  // 約1秒後に次の処理
+  setTimeout(() => {
+
+    // 敵を倒した場合
+if (trialConsecutiveCorrect >= requiredCorrect) {
+
+  const defeatedMonster =
+    trialMonsters[trialBattleNumber - 1];
+
+  if (messageElement) {
+    messageElement.textContent =
+      `${defeatedMonster.name}を倒した！`;
+  }
+
+// 第10戦：魔獣ククデーモン専用の撃破モーション
+  if (trialBattleNumber === 10) {
+    const demonImage =
+      document.querySelector("#trial-enemy-image img");
+
+    if (!demonImage) return;
+
+    // 既存の登場・撃破アニメーションを解除
+    demonImage.classList.remove(
+      "trial-appear-animation",
+      "trial-neo-appear-animation",
+      "trial-demon-appear-animation",
+      "trial-defeat-animation"
+    );
+
+    demonImage.style.visibility = "visible";
+    demonImage.style.opacity = "1";
+
+    // 撃破モーション全10コマ
+    const defeatFrames = Array.from(
+      { length: 10 },
+      (_, i) =>
+        `images/kuku_demon_defeat_${String(i).padStart(2, "0")}.png`
+    );
+
+    // 画像をすべて先読みしてから再生する
+    Promise.all(
+      defeatFrames.map(src => new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = resolve;
+        image.onerror = () => reject(new Error(src));
+        image.src = src;
+      }))
+    ).then(() => {
+       
+      // 最後の一撃：元画像を白く激しく点滅させる
+
+      demonImage.src = "images/kuku_demon.png"; 
+      
+      // 最後の一撃：表示・非表示を直接切り替える高速点滅
+      new Promise(resolve => {
+        let flashCount = 0;
+
+        const flashTimer = setInterval(() => {
+          flashCount++;
+
+          // 画像の表示と非表示を交互に切り替える
+          demonImage.style.visibility =
+            flashCount % 2 === 1 ? "hidden" : "visible";
+
+          // 12回切り替えたら終了（約0.84秒）
+          if (flashCount >= 12) {
+            clearInterval(flashTimer);
+            demonImage.style.visibility = "visible";
+            resolve();
+          }
+        }, 70);
+      }).then(() => {
+        
+        // 魔力の暴走：左右に激しく震える
+        return demonImage.animate(
+  [
+    { transform: "translate(0px, 0px)" },
+    { transform: "translate(-2px, 1px)" },
+    { transform: "translate(2px, -1px)" },
+    { transform: "translate(-3px, 1px)" },
+    { transform: "translate(3px, -1px)" },
+    { transform: "translate(-2px, 0px)" },
+    { transform: "translate(2px, 1px)" },
+    { transform: "translate(0px, 0px)" }
+  ],
+  {
+    duration: 320,
+    iterations: 5,
+    easing: "steps(8, end)"
+  }
+).finished;
+
+      }).then(() => {
+
+        // 崩壊画像をゆっくり順番に表示
+        let frameIndex = 0;
+
+        const defeatTimer = setInterval(() => {
+          demonImage.src = defeatFrames[frameIndex];
+          frameIndex++;
+
+          if (frameIndex >= defeatFrames.length) {
+            clearInterval(defeatTimer);
+
+            setTimeout(() => {
+  demonImage.style.visibility = "hidden";
+
+  if (messageElement) {
+    messageElement.textContent =
+      "魔獣ククデーモンを倒した！";
+  }
+
+ // 撃破メッセージを表示したあと専用VICTORY画面へ
+setTimeout(() => {
+  startTrialEnding();
+}, 1500);
+
+}, 300);
+          }
+        }, 320);
+      });
+
+    }).catch(error => {
+      console.error("撃破モーション画像の読み込み失敗:", error);
+    });
+
+    // 通常の撃破演出・次の戦闘処理には進まない
+    return;
+  }
+   
+// 敵を点滅させながら消す
+  const enemyImage =
+    document.querySelector("#trial-enemy-image img");
+
+if (enemyImage) {
+  // 前の登場アニメーションを解除
+  enemyImage.classList.remove("trial-appear-animation");
+  enemyImage.classList.remove("trial-neo-appear-animation"); 
+  enemyImage.classList.remove("trial-demon-appear-animation"); 
+
+  // 撃破アニメーションを開始
+  enemyImage.classList.add("trial-defeat-animation");
+
+  // 撃破アニメーション終了後、敵を完全に非表示にする
+  enemyImage.addEventListener("animationend", function onTrialDefeatEnd(event) {
+    if (event.animationName !== "trialMonsterDefeat") return;
+
+    enemyImage.style.visibility = "hidden";
+    enemyImage.removeEventListener("animationend", onTrialDefeatEnd);
+  });
+}
+   
+  // 撃破メッセージを1秒間表示
+  setTimeout(() => {
+
+    // 最終戦クリア時はここで停止
+    if (trialBattleNumber >= trialMonsters.length) {
+      return;
+    }
+
+   // 次の戦闘へ
+trialBattleNumber++;
+trialConsecutiveCorrect = 0;
+
+// 勇者の試練：9戦目・10戦目の専用BGMに切り替える
+if (trialBattleNumber === 9 || trialBattleNumber === 10) {
+  updateBgmForScreen("trial-battle-screen");
+}
+    // 次の敵の画像要素を取得
+const nextEnemyImage =
+  document.querySelector("#trial-enemy-image img");
+
+// 次の敵の情報を取得
+const nextMonster = trialMonsters[trialBattleNumber - 1];
+
+// 前の敵を完全に非表示にする
+if (nextEnemyImage && nextMonster) {
+  nextEnemyImage.style.visibility = "hidden";
+  nextEnemyImage.style.opacity = "0";
+
+  // 前のアニメーションを解除
+  nextEnemyImage.classList.remove("trial-defeat-animation");
+  nextEnemyImage.classList.remove("trial-appear-animation");
+   nextEnemyImage.classList.remove("trial-neo-appear-animation");
+   nextEnemyImage.classList.remove("trial-demon-appear-animation");
+
+  // 次の敵の画像を先に読み込む
+  const preloadImage = new Image();
+
+  preloadImage.onload = () => {
+    // 読み込み完了後に敵の名前・画像・ハートを更新
+    updateTrialMonsterDisplay(trialBattleNumber);
+
+   // 登場アニメーションを最初から再生
+void nextEnemyImage.offsetWidth;
+
+// 勇者の試練：ボス専用登場モーション
+const isNeoKukudes = trialBattleNumber === 9;
+const isKukuDemon = trialBattleNumber === 10;
+
+const appearClass = isNeoKukudes
+  ? "trial-neo-appear-animation"
+  : isKukuDemon
+    ? "trial-demon-appear-animation"
+    : "trial-appear-animation";
+
+nextEnemyImage.classList.add(appearClass);
+nextEnemyImage.style.visibility = "visible";
+
+   // ククデーモン登場時だけ背景を暗転
+const trialScreen =
+  document.getElementById("trial-battle-screen");
+
+if (isKukuDemon && trialScreen) {
+  trialScreen.classList.remove("trial-demon-darkening");
+  void trialScreen.offsetWidth;
+  trialScreen.classList.add("trial-demon-darkening");
+}  
+
+    // 登場アニメーション終了後は通常表示に戻す
+nextEnemyImage.addEventListener(
+  "animationend",
+  function onTrialAppearEnd(event) {
+
+    const expectedAnimation = isNeoKukudes
+  ? "trialNeoAppear"
+  : isKukuDemon
+    ? "trialDemonAppear"
+    : "trialMonsterAppear";
+
+    if (event.animationName !== expectedAnimation) return;
+
+    nextEnemyImage.classList.remove(appearClass);
+    nextEnemyImage.style.opacity = "";
+
+// 降臨演出終了後、背景の暗転を解除
+if (isKukuDemon && trialScreen) {
+  trialScreen.classList.remove("trial-demon-darkening");
+}
+     
+    nextEnemyImage.removeEventListener(
+      "animationend",
+      onTrialAppearEnd
+    );
+  }
+);
+  };
+
+  preloadImage.onerror = () => {
+    console.error("敵画像の読み込みに失敗:", nextMonster.image);
+  };
+
+  preloadImage.src = nextMonster.image;
+}
+
+    // 次の段の問題を取得
+    const question =
+      getNextTrialQuestion(trialBattleNumber);
+
+    if (!question) {
+      trialAnswerLocked = false;
+      return;
+    }
+
+    const hideLeft = false;
+
+    const questionElement =
+      document.getElementById("trial-battle-question");
+
+    if (questionElement) {
+      questionElement.textContent = hideLeft
+        ? `？ × ${question.b} = ${question.result}`
+        : `${question.a} × ？ = ${question.result}`;
+    }
+
+    const nextCorrectAnswer = hideLeft
+      ? question.a
+      : question.b;
+
+    createTrialBattleAnswers(nextCorrectAnswer);
+
+    if (messageElement) {
+      messageElement.textContent =
+        "勇者の試練に挑戦！";
+    }
+
+    trialAnswerLocked = false;
+
+  }, 1000);
+
+  return;
+}
+
+    // 次の九九問題を取得
+    const question =
+      getNextTrialQuestion(trialBattleNumber);
+
+    if (!question) {
+      trialAnswerLocked = false;
+      return;
+    }
+
+    // 左右ランダム穴埋め
+    const hideLeft = false;
+
+    const questionElement =
+      document.getElementById("trial-battle-question");
+
+    if (questionElement) {
+      questionElement.textContent = hideLeft
+        ? `？ × ${question.b} = ${question.result}`
+        : `${question.a} × ？ = ${question.result}`;
+    }
+
+    // 正解の数字
+    const nextCorrectAnswer = hideLeft
+      ? question.a
+      : question.b;
+
+    // 次の4択を生成
+    createTrialBattleAnswers(nextCorrectAnswer);
+
+    // メッセージを戻す
+    if (messageElement) {
+      messageElement.textContent =
+        "勇者の試練に挑戦！";
+    }
+
+    // 回答受付を再開
+    trialAnswerLocked = false;
+
+  }, 1000);
+}
+   
 /* =========================================================
    ★★★ 森の九九問題 ★★★
    ========================================================= */
 
 function createBattleQuestion() {
 
-  /*
-     戦闘終了後は問題を出さない
-  */
-
+  // 戦闘終了後は問題を出さない
   if (
     battleEnemyHP <= 0 ||
     battlePlayerHP <= 0
   ) {
-
     return;
-
   }
 
+  battleAnswering = true;
 
-  battleAnswering =
-    true;
+  // 重複しないシャッフル式で問題を取得
+  const { a, b } = getNextBattleQuestion();
 
+  battleAnswer = a * b;
 
-  /*
-     ★重要
-
-     はじまりの森は
-     1～3の段だけ。
-
-     モンスターの段は関係ない。
-  */
-
-  const stage =
-    getAdventureStage(
-      currentAdventureStage
-    );
-
-  const a =
-    Math.floor(
-      Math.random() *
-        (
-          stage.questionMax -
-          stage.questionMin +
-          1
-        )
-    ) +
-    stage.questionMin;
-
-
-  const b =
-    Math.floor(
-      Math.random() * 9
-    ) + 1;
-
-
-  battleAnswer =
-    a * b;
-
-
-  const question =
-    el("battle-question");
-
+  const question = el("battle-question");
 
   if (question) {
-
-    question.textContent =
-      `${a} × ${b} = ?`;
-
+    question.textContent = `${a} × ${b} = ?`;
   }
 
-
+  // 既存の4択生成処理をそのまま使用
   createBattleAnswers();
 }
-
 
 /* =========================================================
    バトル選択肢
@@ -4306,6 +5879,7 @@ function createBattleAnswers() {
       }
     );
 }
+
 
 
 /* =========================================================
@@ -4406,27 +5980,37 @@ function checkBattleAnswer(
        敵撃破
     */
 
-    if (
-      battleEnemyHP <= 0
-    ) {
+   if (
+    battleEnemyHP <= 0
+) {
 
-      battleTimer =
+    battleTimer =
         setTimeout(
-          () => {
+            () => {
 
-            battleTimer =
-              null;
+                battleTimer = null;
 
-            battleWin();
+                /* 魔王ククデスだけ専用撃破アニメーション */
+                if (
+                    currentAdventureStage === "castle" &&
+                    currentBattleNumber === 6
+                ) {
+                    playKukudesDefeatAnimation(() => {
+    battleWin();
+});
+                }
 
-          },
-          500
+                /* それ以外の敵は今まで通り */
+                else {
+                    battleWin();
+                }
+
+            },
+            500
         );
 
-
-      return;
-
-    }
+    return;
+}
 
 
     /*
@@ -4459,6 +6043,32 @@ function checkBattleAnswer(
       "wrong"
     );
 
+        // ダメージ演出
+    const battleScreen =
+      document.getElementById("battle-screen");
+
+    if (battleScreen) {
+      battleScreen.classList.remove(
+        "damage-flash",
+        "damage-shake"
+      );
+
+      // 毎回アニメーションを確実に再生
+      void battleScreen.offsetWidth;
+
+      battleScreen.classList.add(
+        "damage-flash",
+        "damage-shake"
+      );
+
+      // 演出終了後にクラスを外す
+      setTimeout(() => {
+        battleScreen.classList.remove(
+          "damage-flash",
+          "damage-shake"
+        );
+      }, 250);
+    } 
 
     battleCombo =
       0;
@@ -4565,16 +6175,18 @@ function enemyAttack() {
      ★HP持ち越し
   */
 
-  if (
-    currentAdventureStage === "lake"
-  ) {
-    lakeCurrentHP =
-      battlePlayerHP;
-  }
-  else {
-    forestCurrentHP =
-      battlePlayerHP;
-  }
+  if (currentAdventureStage === "castle") {
+    castleCurrentHP = battlePlayerHP;
+}
+else if (currentAdventureStage === "volcano") {
+    volcanoCurrentHP = battlePlayerHP;
+}
+else if (currentAdventureStage === "lake") {
+    lakeCurrentHP = battlePlayerHP;
+}
+else {
+    forestCurrentHP = battlePlayerHP;
+}
 
 
   battleMessage(
@@ -4644,7 +6256,111 @@ function enemyAttack() {
    バトル勝利
    ========================================================= */
 
+/* =========================================
+   魔王ククデス 撃破アニメーション
+========================================= */
+
+function playKukudesDefeatAnimation(callback) {
+
+    const enemyImage = el("enemy-image");
+
+    if (!enemyImage) {
+        callback();
+        return;
+    }
+
+    const img = enemyImage.querySelector("img");
+
+    if (!img) {
+        callback();
+        return;
+    }
+
+const lastMessage = el("kukudes-last-message");
+
+/* ククデス最後のセリフを表示 */
+if (lastMessage) {
+    lastMessage.style.display = "block";
+}
+   
+    const frames = [
+        "images/maou_defeat_1.png",
+        "images/maou_defeat_2.png",
+        "images/maou_defeat_3.png",
+        "images/maou_defeat_4.png",
+        "images/maou_defeat_5.png",
+        "images/maou_defeat_6.png"
+    ];
+
+    /* ① 倒された直後、一瞬完全に静止 */
+    setTimeout(() => {
+
+        /* ② 小刻みに震え始める */
+        const shake = img.animate(
+            [
+                { transform: "translate(0, 0)" },
+                { transform: "translate(-3px, 1px)" },
+                { transform: "translate(3px, -1px)" },
+                { transform: "translate(-2px, -1px)" },
+                { transform: "translate(2px, 1px)" },
+                { transform: "translate(0, 0)" }
+            ],
+            {
+                duration: 180,
+                iterations: Infinity
+            }
+        );
+
+        /* ③ 震えたあと、崩壊開始 */
+        setTimeout(() => {
+
+            let frame = 0;
+
+            const timer = setInterval(() => {
+
+                img.src = frames[frame];
+                frame++;
+
+                if (frame >= frames.length) {
+
+                    clearInterval(timer);
+
+                    /* ④ 崩壊終了と同時に震えを止める */
+                    shake.cancel();
+
+                    /* ⑤ 最後の粒子を残す */
+                    setTimeout(() => {
+
+                        img.style.visibility = "hidden";
+
+                        /* ⑥ 完全消滅後の余韻 */
+                        setTimeout(() => {
+
+                            callback();
+
+                        }, 350);
+
+                    }, 550);
+                }
+
+            }, 500);
+
+        }, 650);
+
+    }, 650);
+}
 function battleWin() {
+
+  /* 勝利した瞬間の通常戦BGM位置を保存 */
+  const battleBgm = document.getElementById("op-bgm");
+
+  if (
+    battleBgm &&
+    battleBgmResumeTime[currentBgmKey] !== undefined
+  ) {
+    battleBgmResumeTime[currentBgmKey] =
+      battleBgm.currentTime;
+  }
 
   const data =
     getMonsterData(
@@ -4678,40 +6394,76 @@ function battleWin() {
   const isLake =
     currentAdventureStage === "lake";
 
+   const isVolcano =
+  currentAdventureStage === "volcano";
+
+const isCastle =
+  currentAdventureStage === "castle";
+
   /*
      現在HPと進行状況を
      ステージ別に保存。
   */
-  if (isLake) {
-    lakeCurrentHP =
-      battlePlayerHP;
+ if (isCastle) {
+  castleCurrentHP =
+    battlePlayerHP;
 
-    if (
-      currentBattleNumber >
-      lakeProgress
-    ) {
-      lakeProgress =
-        currentBattleNumber;
-    }
-
-    lakeBattleMonsterId =
-      Number(selectedMonsterId);
+  if (
+    currentBattleNumber >
+    castleProgress
+  ) {
+    castleProgress =
+      currentBattleNumber;
   }
-  else {
-    forestCurrentHP =
-      battlePlayerHP;
 
-    if (
-      currentBattleNumber >
-      forestProgress
-    ) {
-      forestProgress =
-        currentBattleNumber;
-    }
+  castleBattleMonsterId =
+    Number(selectedMonsterId);
+}
+else if (isVolcano) {
+  volcanoCurrentHP =
+    battlePlayerHP;
 
-    forestBattleMonsterId =
-      Number(selectedMonsterId);
+  if (
+    currentBattleNumber >
+    volcanoProgress
+  ) {
+    volcanoProgress =
+      currentBattleNumber;
   }
+
+  volcanoBattleMonsterId =
+    Number(selectedMonsterId);
+}
+else if (isLake) {
+  lakeCurrentHP =
+    battlePlayerHP;
+
+  if (
+    currentBattleNumber >
+    lakeProgress
+  ) {
+    lakeProgress =
+      currentBattleNumber;
+  }
+
+  lakeBattleMonsterId =
+    Number(selectedMonsterId);
+}
+else {
+  forestCurrentHP =
+    battlePlayerHP;
+
+  if (
+    currentBattleNumber >
+    forestProgress
+  ) {
+    forestProgress =
+      currentBattleNumber;
+  }
+
+  forestBattleMonsterId =
+    Number(selectedMonsterId);
+}
 
   const icon =
     el("battle-result-icon");
@@ -4739,31 +6491,39 @@ function battleWin() {
   }
 
   if (title) {
-    title.textContent =
-      currentBattleNumber === 6
-        ? (
-            isLake
-              ? "🌊 九九の湖クリア！"
-              : "🌳 はじまりの森クリア！"
-          )
-        : "🎉 バトル勝利！";
-  }
+  title.textContent =
+    currentBattleNumber === 6
+      ? (
+          isCastle
+            ? "🏰 魔王城クリア！"
+            : isVolcano
+              ? "🌋 炎のカッケ山クリア！"
+              : isLake
+                ? "🌊 九九の湖クリア！"
+                : "🌳 はじまりの森クリア！"
+        )
+      : "🎉 バトル勝利！";
+}
 
   if (message) {
-    if (
-      currentBattleNumber === 6
-    ) {
-      message.textContent =
-        isLake
-          ? "湖底の主を倒した！"
-          : "森のボスを倒した！";
-    }
-    else {
-      message.textContent =
-        `バトル${currentBattleNumber}クリア！\n` +
-        `残りHP ${battlePlayerHP} / ${battlePlayerMaxHP}`;
-    }
+  if (
+    currentBattleNumber === 6
+  ) {
+    message.textContent =
+      isCastle
+        ? "魔王ククデスを倒した！"
+        : isVolcano
+          ? "ボルケーノゴーレムを倒した！"
+          : isLake
+            ? "湖底の主を倒した！"
+            : "森のボスを倒した！";
   }
+  else {
+    message.textContent =
+      `バトル${currentBattleNumber}クリア！\n` +
+      `残りHP ${battlePlayerHP} / ${battlePlayerMaxHP}`;
+  }
+}
 
   if (exp) {
     exp.textContent =
@@ -4785,16 +6545,21 @@ function battleWin() {
   const returnButton =
     el("battle-return-forest");
 
-  if (returnButton) {
+ if (returnButton) {
   returnButton.textContent =
-    currentAdventureStage === "volcano"
-      ? "🌋 カッケ山のマップへ"
-      : isLake
-        ? "🌊 湖のマップへ"
-        : "🌳 森のマップへ";
+    isCastle
+      ? "🏰 魔王城のマップへ"
+      : isVolcano
+        ? "🌋 カッケ山のマップへ"
+        : isLake
+          ? "🌊 湖のマップへ"
+          : "🌳 森のマップへ";
 }
 
-  if (currentAdventureStage === "volcano") {
+  if (isCastle) {
+  updateCastleMap();
+}
+else if (isVolcano) {
   updateVolcanoMap();
 }
 else if (isLake) {
@@ -4804,18 +6569,63 @@ else {
   updateForestMap();
 }
 
-  updateWorldStats();
+   saveGame();
 
-  saveGame();
+showScreen("battle-result-screen");
 
-  showScreen(
-    "battle-result-screen"
-  );
+// 魔王ククデス撃破時だけ特別な処理
+if (
+    currentAdventureStage === "castle" &&
+    currentBattleNumber === 6
+) {
+    // クリア画面のボタンを操作できなくする
+    const nextButton = el("battle-next-button");
+    const returnButton = el("battle-return-forest");
 
- if (currentBattleNumber === 6) {
-  playBossClearFanfare();
+    if (nextButton) nextButton.disabled = true;
+    if (returnButton) returnButton.disabled = true;
+
+    // ボス撃破ファンファーレを再生
+    playBossClearFanfare();
+
+    // クリア画面を6秒間表示
+setTimeout(() => {
+
+    // ファンファーレを停止して無音にする
+    const bgm = el("op-bgm");
+    if (bgm) {
+        bgm.pause();
+        bgm.onended = null;
+    }
+
+    // 暗転用の黒い幕を作成
+    const fade = document.createElement("div");
+    fade.id = "ending-fade-overlay";
+    document.body.appendChild(fade);
+
+    // 描画後に暗転開始
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            fade.classList.add("active");
+        });
+    });
+
+    // 2秒かけて暗転した後、エンディング開始
+    setTimeout(() => {
+        startEnding();
+        fade.remove();
+    }, 2100);
+
+}, 6000);
+
+    return;
+}
+
+// 通常の勝利処理（変更なし）
+if (currentBattleNumber === 6) {
+    playBossClearFanfare();
 } else {
-  playBattleClearFanfare();
+    playBattleClearFanfare();
 }
    
   if (leveledUp) {
@@ -4929,29 +6739,44 @@ function battleLose() {
       "🔄 最初から挑戦";
   }
 
-  const returnButton =
-    el("battle-return-forest");
+ const returnButton =
+  el("battle-return-forest");
 
-  if (returnButton) {
-    returnButton.textContent =
-      currentAdventureStage === "lake"
-        ? "🌊 湖のマップへ"
-        : "🌳 森のマップへ";
-  }
+if (returnButton) {
+  returnButton.textContent =
+    currentAdventureStage === "castle"
+      ? "🏰 魔王城のマップへ"
+      : currentAdventureStage === "volcano"
+        ? "🌋 カッケ山のマップへ"
+        : currentAdventureStage === "lake"
+          ? "🌊 湖のマップへ"
+          : "🌳 森のマップへ";
+}
 
-  if (
-    currentAdventureStage === "lake"
-  ) {
-    lakeCurrentHP = 0;
-    lakeBattleMonsterId = null;
-    updateLakeMap();
-  }
-  else {
-    forestProgress = 0;
-    forestCurrentHP = 0;
-    forestBattleMonsterId = null;
-    updateForestMap();
-  }
+if (currentAdventureStage === "castle") {
+  castleProgress = 0;
+  castleCurrentHP = 0;
+  castleBattleMonsterId = null;
+  updateCastleMap();
+}
+else if (currentAdventureStage === "volcano") {
+  volcanoProgress = 0;
+  volcanoCurrentHP = 0;
+  volcanoBattleMonsterId = null;
+  updateVolcanoMap();
+}
+else if (currentAdventureStage === "lake") {
+  lakeProgress = 0;
+  lakeCurrentHP = 0;
+  lakeBattleMonsterId = null;
+  updateLakeMap();
+}
+else {
+  forestProgress = 0;
+  forestCurrentHP = 0;
+  forestBattleMonsterId = null;
+  updateForestMap();
+}
 
   saveGame();
 
@@ -4972,6 +6797,9 @@ function nextBattle() {
   const isVolcano =
     currentAdventureStage === "volcano";
 
+  const isCastle =
+  currentAdventureStage === "castle"; 
+
   /*
      敗北後は、そのステージの①から再挑戦。
   */
@@ -4979,14 +6807,21 @@ function nextBattle() {
     battlePlayerHP <= 0
   ) {
 
-    if (isVolcano) {
-      volcanoProgress = 0;
-      volcanoCurrentHP = 0;
-      volcanoBattleMonsterId = null;
-      saveGame();
-      startVolcanoBattle(1);
-    }
-    else if (isLake) {
+   if (isCastle) {
+  castleProgress = 0;
+  castleCurrentHP = 0;
+  castleBattleMonsterId = null;
+  saveGame();
+  startCastleBattle(1);
+}
+else if (isVolcano) {
+  volcanoProgress = 0;
+  volcanoCurrentHP = 0;
+  volcanoBattleMonsterId = null;
+  saveGame();
+  startVolcanoBattle(1);
+}
+else if (isLake) {
       lakeProgress = 0;
       lakeCurrentHP = 0;
       lakeBattleMonsterId = null;
@@ -5011,7 +6846,12 @@ function nextBattle() {
     currentBattleNumber === 6
   ) {
 
-    if (isVolcano) {
+    if (isCastle) {
+  castleProgress = 6;
+  castleCurrentHP = 0;
+  castleBattleMonsterId = null;
+}
+else if (isVolcano) {
   volcanoProgress = 6;
   volcanoCurrentHP = 0;
   volcanoBattleMonsterId = null;
@@ -5041,7 +6881,30 @@ else {
      次のバトルを開始する。
   */
 
-  if (isVolcano) {
+ if (isCastle) {
+
+  castleCurrentHP =
+    battlePlayerHP;
+
+  castleBattleMonsterId =
+    Number(selectedMonsterId);
+
+  castleProgress =
+    Math.max(
+      castleProgress,
+      currentBattleNumber
+    );
+
+  saveAdventureStage("castle");
+saveGame();
+
+// 次の戦闘は連戦扱い
+castleContinuingBattle = true;
+
+startCastleBattle(next);
+
+}
+else if (isVolcano) {
 
     volcanoCurrentHP =
       battlePlayerHP;
@@ -5056,9 +6919,12 @@ else {
       );
 
     saveAdventureStage("volcano");
-    saveGame();
+saveGame();
 
-    startVolcanoBattle(next);
+// 次の戦闘は連戦扱い
+volcanoContinuingBattle = true;
+
+startVolcanoBattle(next);
 
   }
   else if (isLake) {
@@ -5076,9 +6942,12 @@ else {
       );
 
     saveAdventureStage("lake");
-    saveGame();
+saveGame();
 
-    startLakeBattle(next);
+// 次の戦闘は連戦扱い
+lakeContinuingBattle = true;
+
+startLakeBattle(next);
 
   }
   else {
@@ -5096,9 +6965,12 @@ else {
       );
 
     saveAdventureStage("forest");
-    saveGame();
+saveGame();
 
-    startForestBattle(next);
+// 次のバトルは連戦扱い
+forestContinuingBattle = true;
+
+startForestBattle(next);
   }
 }
 
@@ -5129,47 +7001,77 @@ function battleReturnAdventure() {
   */
 
   if (
-    battlePlayerMaxHP > 0
+  battlePlayerMaxHP > 0
+) {
+
+  if (
+    currentAdventureStage === "castle"
   ) {
-
-    if (
-      currentAdventureStage === "lake"
-    ) {
-      lakeCurrentHP =
-        battlePlayerHP;
-    }
-    else {
-      forestCurrentHP =
-        battlePlayerHP;
-    }
-
+    castleCurrentHP =
+      battlePlayerHP;
   }
+  else if (
+    currentAdventureStage === "volcano"
+  ) {
+    volcanoCurrentHP =
+      battlePlayerHP;
+  }
+  else if (
+    currentAdventureStage === "lake"
+  ) {
+    lakeCurrentHP =
+      battlePlayerHP;
+  }
+  else {
+    forestCurrentHP =
+      battlePlayerHP;
+  }
+
+}
 
 
   saveGame();
 
 
-  if (
-    currentAdventureStage === "lake"
-  ) {
-    updateLakeMap();
+ if (
+  currentAdventureStage === "castle"
+) {
+  updateCastleMap();
 
-    showScreen(
-      "lake-screen"
-    );
-  }
-  else {
-    updateForestMap();
+  showScreen(
+    "castle-screen"
+  );
+}
+else if (
+  currentAdventureStage === "volcano"
+) {
+  updateVolcanoMap();
 
-    showScreen(
-      "forest-screen"
-    );
-  }
+  showScreen(
+    "volcano-screen"
+  );
+}
+else if (
+  currentAdventureStage === "lake"
+) {
+  updateLakeMap();
+
+  showScreen(
+    "lake-screen"
+  );
+}
+else {
+  updateForestMap();
+
+  showScreen(
+    "forest-screen"
+  );
+}
 }
 
 
 /* =========================================================
-   バトル画面から森へ
+   バトル画面から冒険マップへ
    ========================================================= */
 
 function battleBackAdventure() {
@@ -5183,7 +7085,10 @@ function battleBackAdventure() {
 
   if (battlePlayerMaxHP > 0) {
 
-    if (currentAdventureStage === "volcano") {
+    if (currentAdventureStage === "castle") {
+      castleCurrentHP = battlePlayerHP;
+    }
+    else if (currentAdventureStage === "volcano") {
       volcanoCurrentHP = battlePlayerHP;
     }
     else if (currentAdventureStage === "lake") {
@@ -5197,7 +7102,11 @@ function battleBackAdventure() {
 
   saveGame();
 
-  if (currentAdventureStage === "volcano") {
+  if (currentAdventureStage === "castle") {
+    updateCastleMap();
+    showScreen("castle-screen");
+  }
+  else if (currentAdventureStage === "volcano") {
     updateVolcanoMap();
     showScreen("volcano-screen");
   }
@@ -5261,6 +7170,7 @@ function resetGame() {
   stageStars = {};
   caughtMonsters = [];
   monsterData = {};
+  infiniteCorridorTitles = []; 
 
   adventureUnlocked =
     false;
@@ -5268,6 +7178,8 @@ function resetGame() {
   battleWins =
     0;
 
+   trialUnlocked = false;
+infiniteCorridorUnlocked = false;
 
   /*
      修行
@@ -5333,6 +7245,32 @@ function resetGame() {
   lakeBattleMonsterId =
     null;
 
+   /*
+   火山
+*/
+
+volcanoProgress =
+  0;
+
+volcanoCurrentHP =
+  0;
+
+volcanoBattleMonsterId =
+  null;
+
+
+/*
+   魔王城
+*/
+
+castleProgress =
+  0;
+
+castleCurrentHP =
+  0;
+
+castleBattleMonsterId =
+  null;
 
   /*
      バトル
@@ -5398,9 +7336,6 @@ function resetGame() {
 
   updateForestMap();
 
-  updateWorldStats();
-
-
   alert(
     "✨ セーブデータをリセットしました！\n\n" +
     "1の段から新しい冒険を始めよう！"
@@ -5457,6 +7392,25 @@ function openVolcano() {
   showScreen("volcano-screen");
 }
 
+function openCastle() {
+  if (!isVolcanoCleared()) {
+    alert("魔王城は、炎のカッケ山をクリアすると解放されます！");
+    return;
+  }
+
+  if (caughtMonsters.length === 0) {
+    alert("冒険には仲間が必要です！\nまず修行してモンスターを仲間にしよう！");
+    return;
+  }
+
+  if (!selectedMonsterId || !caughtMonsters.includes(Number(selectedMonsterId))) {
+    selectedMonsterId = Number(caughtMonsters[0]);
+  }
+
+  updateCastleMap();
+  showScreen("castle-screen");
+}
+
 function updateLakeMap() {
   const nodes = document.querySelectorAll(
     "#lake-screen .battle-node, #lake-screen .boss-node"
@@ -5506,6 +7460,7 @@ function updateLakeMap() {
   }
 }
 
+let lakeContinuingBattle = false;
 function startLakeBattle(battleNumber) {
 
   const number =
@@ -5558,6 +7513,14 @@ function startLakeBattle(battleNumber) {
   currentBattleNumber =
     number;
 
+/*
+   バトル1から開始するときは
+   通常戦BGMを最初から
+*/
+if (number === 1) {
+  battleBgmResumeTime.lakeBattle = 0;
+}
+   
   const monsterChanged =
     lakeBattleMonsterId !==
     selectedId;
@@ -5567,16 +7530,17 @@ function startLakeBattle(battleNumber) {
      ②～⑤は前戦のHPを持ち越す。
   */
   if (
+    !lakeContinuingBattle ||
     number === 1 ||
     monsterChanged ||
     lakeCurrentHP <= 0
-  ) {
-    lakeCurrentHP =
-      data.hp;
+) {
+    lakeCurrentHP = data.hp;
+    lakeBattleMonsterId = selectedId;
+}
 
-    lakeBattleMonsterId =
-      selectedId;
-  }
+// 連戦フラグをリセット
+lakeContinuingBattle = false;
 
   /*
      湖の敵を決定。
@@ -5661,8 +7625,61 @@ function updateVolcanoMap() {
 }
 
 /* =========================================================
+   魔王城：マップ更新
+   ========================================================= */
+
+function updateCastleMap() {
+  const nodes = document.querySelectorAll(
+    "#castle-screen .battle-node, #castle-screen .boss-node"
+  );
+
+  nodes.forEach(node => {
+    const number = Number(node.dataset.battle);
+    const unlocked = number === 1 || castleProgress >= number - 1;
+    const cleared = castleProgress >= number;
+
+    node.disabled = !unlocked;
+    node.classList.toggle("locked-node", !unlocked);
+    node.classList.toggle("cleared-node", cleared);
+
+    const icon = node.querySelector(".node-icon");
+    if (!icon) return;
+
+    if (cleared) icon.textContent = "⭐";
+    else if (number === 6) icon.textContent = unlocked ? "👑" : "🔒";
+    else icon.textContent = unlocked ? "⚔️" : "🔒";
+  });
+
+  const fill = el("castle-progress-fill");
+  if (fill) fill.style.width = `${castleProgress / 6 * 100}%`;
+
+  const progress = el("castle-progress-text");
+  if (progress) {
+    progress.textContent = `${castleProgress} / 6 バトルクリア`;
+  }
+
+  const goal = document.querySelector(
+    "#castle-screen .goal-node"
+  );
+
+  if (goal) {
+    goal.classList.toggle(
+      "locked-node",
+      castleProgress < 6
+    );
+
+    const icon = goal.querySelector(".node-icon");
+    if (icon) {
+      icon.textContent = castleProgress >= 6 ? "🏆" : "🔒";
+    }
+  }
+}
+
+
+/* =========================================================
    炎のカッケ山：バトル開始
    ========================================================= */
+let volcanoContinuingBattle = false;
 
 function startVolcanoBattle(battleNumber) {
 
@@ -5722,6 +7739,14 @@ function startVolcanoBattle(battleNumber) {
   currentBattleNumber =
     number;
 
+/*
+   バトル1から開始するときは
+   通常戦BGMを最初から
+*/
+if (number === 1) {
+  battleBgmResumeTime.volcanoBattle = 0;
+}
+   
   const monsterChanged =
     volcanoBattleMonsterId !==
     selectedId;
@@ -5731,16 +7756,17 @@ function startVolcanoBattle(battleNumber) {
      ②～⑤は前戦のHPを持ち越す。
   */
   if (
+    !volcanoContinuingBattle ||
     number === 1 ||
     monsterChanged ||
     volcanoCurrentHP <= 0
-  ) {
-    volcanoCurrentHP =
-      data.hp;
+) {
+    volcanoCurrentHP = data.hp;
+    volcanoBattleMonsterId = selectedId;
+}
 
-    volcanoBattleMonsterId =
-      selectedId;
-  }
+// 連戦フラグをリセット
+volcanoContinuingBattle = false;
 
   /*
      火山の敵を決定。
@@ -5773,6 +7799,129 @@ function startVolcanoBattle(battleNumber) {
   );
 }
 
+/* =========================================================
+   魔王城：バトル開始
+   ========================================================= */
+
+let castleContinuingBattle = false;
+
+function startCastleBattle(battleNumber) {
+
+  const number =
+    Number(battleNumber);
+
+  if (
+    number < 1 ||
+    number > 6
+  ) {
+    return;
+  }
+
+  /*
+     前のバトルをクリアしていなければ開始不可
+  */
+  if (
+    number > 1 &&
+    castleProgress < number - 1
+  ) {
+    return;
+  }
+
+  /*
+     仲間モンスターの確認
+  */
+  if (
+    caughtMonsters.length === 0
+  ) {
+    openCastle();
+    return;
+  }
+
+  if (
+    !selectedMonsterId ||
+    !caughtMonsters.includes(
+      Number(selectedMonsterId)
+    )
+  ) {
+    selectedMonsterId =
+      Number(caughtMonsters[0]);
+  }
+
+  const selectedId =
+    Number(selectedMonsterId);
+
+  const data =
+    getMonsterData(selectedId);
+
+  if (!data) {
+    return;
+  }
+
+  currentAdventureStage =
+    "castle";
+
+  currentBattleNumber =
+    number;
+
+  /*
+     バトル1から開始するときは
+     通常戦BGMを最初から
+  */
+  if (number === 1) {
+    battleBgmResumeTime.castleBattle = 0;
+  }
+
+  const monsterChanged =
+    castleBattleMonsterId !==
+    selectedId;
+
+  /*
+   ①またはモンスター変更時はHP満タン。
+   それ以外は前戦のHPを持ち越す。
+*/
+  if (
+    !castleContinuingBattle ||
+    number === 1 ||
+    monsterChanged ||
+    castleCurrentHP <= 0
+) {
+    castleCurrentHP = data.hp;
+    castleBattleMonsterId = selectedId;
+}
+
+// 連戦フラグをリセット
+castleContinuingBattle = false;
+
+  /*
+     魔王城の敵を決定。
+     ⑥は魔王ククデス。
+  */
+  if (
+    number === 6
+  ) {
+    currentWildMonster = {
+      ...adventureStages.castle.boss
+    };
+  }
+  else {
+    const base =
+      adventureStages.castle.enemies[number - 1];
+
+    currentWildMonster = {
+      ...base,
+      hp: base.hp,
+      attack: base.attack
+    };
+  }
+
+  saveAdventureStage("castle");
+
+  setupBattle();
+
+  showScreen(
+    "battle-screen"
+  );
+}
 
 /* =========================================================
    ボタン接続
@@ -5870,17 +8019,92 @@ el("retry-stage")?.addEventListener(
 
 /* 修行結果 → 図鑑 */
 
+/* 育成図鑑を開く */
+function openMonsterBook() {
+  const activeScreen = document.querySelector(".screen.active");
+
+  openBook(activeScreen?.id || "result-screen");
+}
+
 el("monster-book-button")?.addEventListener(
   "click",
+  openMonsterBook
+);
+
+el("menu-monster-book-button")?.addEventListener(
+  "click",
+  openMonsterBook
+);
+
+/* 敵図鑑を開く */
+function openEnemyBook() {
+  const activeScreen = document.querySelector(".screen.active");
+
+  enemyBookReturnScreen =
+    activeScreen?.id || "result-screen";
+
+  renderEnemyBook();
+  showScreen("enemy-book-screen");
+}
+
+el("enemy-book-button")?.addEventListener(
+  "click",
+  openEnemyBook
+);
+
+el("menu-enemy-book-button")?.addEventListener(
+  "click",
+  openEnemyBook
+);
+
+/* 図鑑タブ → 敵モンスター */
+el("book-enemy-tab")?.addEventListener(
+  "click",
   () => {
+    const friendList = el("monster-list");
+    const enemyList = el("book-enemy-list");
+    const friendTab = el("book-friend-tab");
+    const enemyTab = el("book-enemy-tab");
 
-    openBook(
-      "result-screen"
-    );
+    friendList.style.display = "none";
+    enemyList.style.display = "";
 
+    friendTab.classList.remove("active");
+    enemyTab.classList.add("active");
+
+    renderEnemyBook("book-enemy-list");
   }
 );
 
+/* 図鑑タブ → 仲間モンスター */
+el("book-friend-tab")?.addEventListener(
+  "click",
+  () => {
+    const friendList = el("monster-list");
+    const enemyList = el("book-enemy-list");
+    const friendTab = el("book-friend-tab");
+    const enemyTab = el("book-enemy-tab");
+
+    enemyList.style.display = "none";
+    friendList.style.display = "";
+
+    enemyTab.classList.remove("active");
+    friendTab.classList.add("active");
+
+    renderMonsterBook();
+  }
+);
+
+/* 敵図鑑 → タイトルへ */
+el("enemy-book-back")?.addEventListener(
+  "click",
+  () => {
+    saveGame();
+    showScreen(
+      "title-screen"
+    );
+  }
+);
 
 /* 冒険解禁画面 → ワールド */
 
@@ -5890,19 +8114,36 @@ el("adventure-button")?.addEventListener(
 );
 
 
-/* ワールド → 戻る */
-
+/* ワールド → タイトルへ */
 el("world-back-button")?.addEventListener(
   "click",
   () => {
-
+    saveGame();
     showScreen(
-      "training-screen"
+      "title-screen"
     );
-
   }
 );
 
+/* 修行 → タイトルへ */
+el("training-top-button")?.addEventListener(
+  "click",
+  () => {
+    saveGame();
+    showScreen(
+      "title-screen"
+    );
+  }
+);
+
+/* 育成 → トップ */
+el("training-monster-top-button")?.addEventListener(
+  "click",
+  () => {
+    saveGame();
+    showScreen("title-screen");
+  }
+);
 
 /* ワールド → 森 */
 
@@ -5921,6 +8162,12 @@ el("lake-area")?.addEventListener(
 el("volcano-area")?.addEventListener(
   "click",
   openVolcano
+);
+
+/* ワールド → 魔王城 */
+el("castle-area")?.addEventListener(
+  "click",
+  openCastle
 );
 
 /* 湖のバトルノード */
@@ -5945,6 +8192,17 @@ document
     });
   });
 
+/* 魔王城のバトルノード */
+document
+  .querySelectorAll(
+    "#castle-screen .battle-node, #castle-screen .boss-node"
+  )
+  .forEach(node => {
+    node.addEventListener("click", () => {
+      startCastleBattle(Number(node.dataset.battle));
+    });
+  });
+
 /* 湖 → ワールド */
 el("lake-back-button")?.addEventListener(
   "click",
@@ -5953,6 +8211,12 @@ el("lake-back-button")?.addEventListener(
 
 /* 火山 → ワールド */
 el("volcano-back-button")?.addEventListener(
+  "click",
+  openWorld
+);
+
+/* 魔王城 → ワールド */
+el("castle-back-button")?.addEventListener(
   "click",
   openWorld
 );
@@ -6054,14 +8318,16 @@ el("levelup-button")?.addEventListener(
 );
 
 
-/* 図鑑 → 戻る */
+/* 図鑑 → タイトルへ */
 
 el("book-back")?.addEventListener(
   "click",
   () => {
 
+    saveGame();
+
     showScreen(
-      returnScreen
+      "title-screen"
     );
 
   }
@@ -6099,14 +8365,282 @@ el("world-button")?.addEventListener(
   openWorld
 );
 
+/* =========================================
+   勇者の試練：バトル画面から戻る
+========================================= */
 
-/* 下部メニュー → 育成 */
+el("trial-battle-back-button")?.addEventListener("click", () => {
 
-el("monster-button")?.addEventListener(
-  "click",
-  openMonsterScreen
-);
+  // ワールド画面へ戻る
+  openWorld();
 
+});
+
+/* =========================================
+   勇者の試練：バトル開始共通処理
+========================================= */
+
+function startTrialBattle(startNumber = 1, startHP = trialHeroMaxHP) {
+
+  // 開始する戦闘番号を設定
+  trialBattleNumber = Math.max(
+    1,
+    Math.min(trialMonsters.length, startNumber)
+  );
+
+  // バトル状態を初期化
+  trialConsecutiveCorrect = 0;
+  trialCorrectAnswer = null;
+  trialAnswerLocked = false;
+
+  // 勇者HPを設定
+  trialHeroHP = Math.max(
+    1,
+    Math.min(trialHeroMaxHP, startHP)
+  );
+
+  updateTrialHeroHP();
+
+  // 敵の画像・名前・ハートを更新
+  updateTrialMonsterDisplay(trialBattleNumber);
+
+  // 戦闘番号を設定した後で画面を表示
+  // これにより専用BGMも正しく選択される
+  showScreen("trial-battle-screen");
+
+  // バトルメッセージを初期化
+  const trialMessage =
+    document.getElementById("trial-battle-message");
+
+  if (trialMessage) {
+    trialMessage.textContent = "勇者の試練に挑戦！";
+  }
+
+  // 指定した戦闘の問題を取得
+  const question = getNextTrialQuestion(trialBattleNumber);
+
+  if (!question) return;
+
+  const questionElement =
+    document.getElementById("trial-battle-question");
+
+  const hideLeft = false;
+
+  if (questionElement) {
+    questionElement.textContent = hideLeft
+      ? `？ × ${question.b} = ${question.result}`
+      : `${question.a} × ？ = ${question.result}`;
+  }
+
+  const correctAnswer = hideLeft
+    ? question.a
+    : question.b;
+
+  createTrialBattleAnswers(correctAnswer);
+}
+
+
+/* =========================================
+   勇者の試練：通常開始
+========================================= */
+
+el("trial-area")?.addEventListener("click", () => {
+
+  // 未解放の場合は移動しない
+  if (!trialUnlocked) return;
+
+  // 通常は1戦目から開始
+  startTrialBattle(1);
+
+});
+
+/* =========================================
+   無限回廊：バトル画面を開く
+========================================= */
+
+el("infinite-corridor-area")?.addEventListener("click", () => {
+
+  if (!infiniteCorridorUnlocked) return;
+
+  showScreen("infinite-corridor-battle-screen");
+   updateInfiniteCorridorStatus();
+   startInfiniteCorridorQuestion();
+
+});
+
+// 無限回廊：称号獲得ポップアップの確認ボタン
+el("infinite-corridor-title-confirm")?.addEventListener("click", () => {
+
+  const popup = el("infinite-corridor-title-popup");
+
+  if (!popup) return;
+
+  // ポップアップを閉じる
+  popup.hidden = true;
+
+  // 次の問題を表示
+  startInfiniteCorridorQuestion();
+
+  // 回答ロックを解除
+  infiniteCorridorAnswerLocked = false;
+
+});
+
+// 無限回廊：獲得称号一覧を表示
+function renderInfiniteCorridorTitles() {
+
+  const list = el("infinite-corridor-titles-list");
+  const count = el("infinite-corridor-titles-count");
+
+  if (!list || !count) return;
+
+  const earnedCount = infiniteCorridorTitleMilestones.filter(
+    item => infiniteCorridorTitles.includes(item.floor)
+  ).length;
+
+  count.textContent = `獲得数：${earnedCount}／${infiniteCorridorTitleMilestones.length}`;
+
+  list.innerHTML = "";
+
+  infiniteCorridorTitleMilestones.forEach(item => {
+
+    const earned = infiniteCorridorTitles.includes(item.floor);
+
+    const row = document.createElement("div");
+
+    row.className = earned
+      ? "infinite-corridor-title-item earned"
+      : "infinite-corridor-title-item";
+
+    row.innerHTML = `
+      <span>
+        ${earned ? "🏆" : "🔒"}
+        ${item.floor}階　${item.title}
+      </span>
+      <span class="title-status">
+        ${earned ? "獲得済み" : "未獲得"}
+      </span>
+    `;
+
+    list.appendChild(row);
+
+  });
+}
+
+// 獲得称号一覧を開く
+el("infinite-corridor-titles-button")?.addEventListener("click", () => {
+
+  renderInfiniteCorridorTitles();
+
+  const popup = el("infinite-corridor-titles-popup");
+
+  if (popup) {
+    popup.hidden = false;
+  }
+
+});
+
+// 獲得称号一覧を閉じる
+el("infinite-corridor-titles-close")?.addEventListener("click", () => {
+
+  const popup = el("infinite-corridor-titles-popup");
+
+  if (popup) {
+    popup.hidden = true;
+  }
+
+});
+
+
+/* ==================================
+   無限回廊：中断して戻る
+================================== */
+
+el("infinite-corridor-back-button").addEventListener("click", () => {
+
+  // 現在の進行状況を保存
+  saveGame();
+
+  // 冒険画面へ戻る
+  showScreen("world-screen");
+
+  // ワールドマップの解放状態を更新
+  updateVolcanoAreaAvailability();
+  updateCastleAreaAvailability();
+  updateTrialAreaAvailability();
+  updateInfiniteCorridorAreaAvailability();
+});
+
+/* =========================================
+   無限回廊：最初から挑戦
+========================================= */
+
+el("infinite-corridor-restart-button").addEventListener("click", () => {
+
+  // 誤操作防止の確認
+  const confirmed = confirm(
+    "無限回廊を1階からやり直しますか？\n現在の挑戦状況はリセットされます。"
+  );
+
+  if (!confirmed) return;
+
+  // 挑戦状況をリセット
+  infiniteCorridorFloor = 1;
+  infiniteCorridorMissCount = 0;
+
+  // 直前のモンスター情報をリセット
+  infiniteCorridorLastMonster = null;
+  infiniteCorridorLastBoss = null;
+
+  // ゲームオーバー状態も解除
+  isInfiniteCorridorGameOver = false;
+
+  // 画面表示を更新
+  updateInfiniteCorridorStatus();
+
+  // 保存
+  saveGame();
+
+  // 1階から新しく問題を開始
+  startInfiniteCorridorQuestion();
+});
+
+/* ========================================
+   勇者の試練：ゲームオーバー操作
+======================================== */
+
+// もう一度挑戦
+el("trial-retry-button")?.addEventListener("click", () => {
+
+  // 無限回廊からゲームオーバーになった場合
+  if (isInfiniteCorridorGameOver) {
+
+    // 状態をリセット
+    infiniteCorridorFloor = 1;
+    infiniteCorridorMissCount = 0;
+    infiniteCorridorAnswerLocked = false;
+    isInfiniteCorridorGameOver = false;
+
+    // 無限回廊を再開
+    showScreen("infinite-corridor-battle-screen");
+    updateInfiniteCorridorStatus();
+    startInfiniteCorridorQuestion();
+
+    return;
+  }
+
+  // 通常は勇者の試練を再開
+  el("trial-area")?.click();
+
+});
+
+// 試練へ戻る
+el("trial-gameover-back-button")?.addEventListener("click", () => {
+
+  // ワールド画面へ戻る
+  openWorld();
+
+});
 
 /* =========================================================
    ページ終了時セーブ
@@ -6121,7 +8655,6 @@ window.addEventListener(
   }
 );
 
-
 /* =========================================================
    起動
    ========================================================= */
@@ -6132,9 +8665,6 @@ updateLakeAreaAvailability();
 createStageList();
 
 updateForestMap();
-
-updateWorldStats();
-
 
 /*
    最初はタイトル
@@ -6288,154 +8818,304 @@ showLastUpdate();
 
 function activateDeveloperMode() {
 
+  
   const choice = prompt(
     "🔧 開発者メニュー\n\n" +
-    "1：全開放＋全員MAX\n" +
-    "2：全モンスター仲間入り\n" +
-    "3：冒険を解放\n" +
-    "4：森をクリア状態にする\n" +
-    "5：湖を解放\n\n" +
+    "1：ステージ全開放＋全員MAX\n" +
+    "2：仲間解放（全員加入・全員MAX）\n" +
+    "3：図鑑解放（仲間・敵ともに）\n" +
+    "4：育成テスト（個別レベル設定）\n" +
+    "5：エンディング再生\n\n" +
     "キャンセル：終了"
   );
+
 
   if (choice === null) {
     return;
   }
 
-  /* 全開放＋全員MAX */
-  if (choice === "1") {
+  /* 仲間全員加入＋全員MAX */
+  function maxAllMonsters() {
 
     monsters.forEach(monster => {
 
-      const data =
-        getMonsterData(monster.id);
+      const data = getMonsterData(monster.id);
 
       if (!data) return;
 
-      if (
-        !caughtMonsters.includes(
-          monster.id
-        )
-      ) {
-        caughtMonsters.push(
-          monster.id
-        );
+      if (!caughtMonsters.includes(monster.id)) {
+        caughtMonsters.push(monster.id);
       }
 
-      data.level =
-        monster.maxLevel;
-
+      data.level = monster.maxLevel;
       data.exp = 0;
 
       data.hp =
         monster.baseHP +
-        monster.hpGrowth *
-        (monster.maxLevel - 1);
+        monster.hpGrowth * (monster.maxLevel - 1);
 
       data.attack =
         monster.baseAttack +
-        monster.attackGrowth *
-        (monster.maxLevel - 1);
+        monster.attackGrowth * (monster.maxLevel - 1);
 
       data.defense =
         monster.baseDefense +
-        monster.defenseGrowth *
-        (monster.maxLevel - 1);
+        monster.defenseGrowth * (monster.maxLevel - 1);
     });
+  }
+
+  /* 敵図鑑を全開放 */
+  function unlockAllEnemies() {
+
+   ["forest", "lake", "volcano", "castle"].forEach(stageId => {
+
+      const stage = adventureStages[stageId];
+      if (!stage) return;
+
+      if (!enemyDex[stageId]) {
+        enemyDex[stageId] = {};
+      }
+
+      const enemies = [
+        ...(stage.enemies || []),
+        ...(stage.boss ? [stage.boss] : [])
+      ];
+
+      enemies.forEach(enemy => {
+
+        if (!enemy || !enemy.name) return;
+
+        if (!enemyDex[stageId][enemy.name]) {
+          enemyDex[stageId][enemy.name] = {
+            discovered: true,
+            defeats: 0
+          };
+        } else {
+          enemyDex[stageId][enemy.name].discovered = true;
+        }
+      });
+    });
+  }
+
+  /* 冒険ステージを全開放 */
+  function unlockAllAdventureStages() {
 
     adventureUnlocked = true;
+
+    // 湖の解放条件を満たす
     forestProgress = 6;
-    forestCurrentHP = 0;
+
+    // 火山の解放条件を満たす
     lakeProgress = 6;
+
+    // 魔王城の解放条件を満たす
+volcanoProgress = 6;
+
+adventureStages.forest.progress = 6;
+adventureStages.lake.progress = 6;
+adventureStages.volcano.progress = 6;
+     
+     // 魔王城の進行状況は変更しない
+  }
+
+  /* 1：全開放＋全員MAX */
+if (choice === "1") {
+
+    maxAllMonsters();
+    unlockAllEnemies();
+    unlockAllAdventureStages();
+
+    // 勇者の試練も解放
+    trialUnlocked = true;
+
+   // 全ステージをクリア状態にする
+forestProgress = 6;
+lakeProgress = 6;
+volcanoProgress = 6;
+castleProgress = 6;
+
+adventureStages.castle.progress = 6;
+infiniteCorridorUnlocked = true;
+
+forestCurrentHP = 0;
+lakeCurrentHP = 0;
+volcanoCurrentHP = 0;
+castleCurrentHP = 0;
 
     saveGame();
 
     alert(
       "🚀 全開放しました！\n\n" +
-      "全モンスター仲間入り\n" +
-      "全モンスターMAXレベル\n" +
-      "森クリア\n" +
-      "湖クリア"
+      "・全モンスター加入＆LvMAX\n" +
+      "・敵図鑑全開放\n" +
+      "・冒険ステージ全開放\n" +
+      "・森、湖、火山クリア"
     );
 
     return;
   }
 
-  /* 全モンスター仲間入り */
+  /* 2：仲間図鑑開放 */
   if (choice === "2") {
 
-    monsters.forEach(monster => {
-
-      if (
-        !caughtMonsters.includes(
-          monster.id
-        )
-      ) {
-        caughtMonsters.push(
-          monster.id
-        );
-      }
-
-      getMonsterData(monster.id);
-    });
+    maxAllMonsters();
 
     saveGame();
 
     alert(
-      "🐉 全モンスターを仲間にしました！"
+      "🐉 全モンスターを仲間にして、\n" +
+      "全員をLvMAXにしました！"
     );
 
     return;
   }
 
-  /* 冒険を解放 */
+    /* 3：図鑑解放（仲間・敵ともに） */
   if (choice === "3") {
 
-    adventureUnlocked = true;
+    maxAllMonsters();
+    unlockAllEnemies();
 
     saveGame();
 
     alert(
-      "🗺️ 冒険を解放しました！"
+      "📚 図鑑を全開放しました！\n\n" +
+      "・全モンスター加入＆LvMAX\n" +
+      "・仲間図鑑全開放\n" +
+      "・敵図鑑全開放"
     );
 
     return;
   }
 
-  /* 森をクリア状態にする */
+  /* 4：育成テスト */
   if (choice === "4") {
 
-    adventureUnlocked = true;
-    forestProgress = 6;
+    const monsterList = monsters
+      .map(monster =>
+        `${monster.id}：${monster.name}（Lv上限${monster.maxLevel}）`
+      )
+      .join("\n");
+
+    const monsterInput = prompt(
+      "🧪 育成テスト\n\n" +
+      "レベルを設定する仲間の番号を入力してください。\n\n" +
+      monsterList
+    );
+
+    if (monsterInput === null) return;
+
+    const monsterId = Number(monsterInput);
+
+    const monster = monsters.find(
+      item => item.id === monsterId
+    );
+
+    if (!monster) {
+      alert("❌ モンスター番号が正しくありません。");
+      return;
+    }
+
+    const levelInput = prompt(
+      `${monster.name} の設定レベルを入力してください。\n` +
+      `Lv1 ～ Lv${monster.maxLevel}`
+    );
+
+    if (levelInput === null) return;
+
+    const level = Number(levelInput);
+
+    if (
+      !Number.isInteger(level) ||
+      level < 1 ||
+      level > monster.maxLevel
+    ) {
+      alert(
+        `❌ Lv1～Lv${monster.maxLevel}の整数を入力してください。`
+      );
+      return;
+    }
+
+    const data = getMonsterData(monster.id);
+
+    if (!data) {
+      alert("❌ モンスターのデータを取得できませんでした。");
+      return;
+    }
+
+    // 未加入なら仲間にする
+    if (!caughtMonsters.includes(monster.id)) {
+      caughtMonsters.push(monster.id);
+    }
+
+    // 指定レベルに応じて能力値を更新
+    data.level = level;
+    data.exp = 0;
+
+    data.hp =
+      monster.baseHP +
+      monster.hpGrowth * (level - 1);
+
+    data.attack =
+      monster.baseAttack +
+      monster.attackGrowth * (level - 1);
+
+    data.defense =
+      monster.baseDefense +
+      monster.defenseGrowth * (level - 1);
 
     saveGame();
 
     alert(
-      "🌳 はじまりの森を\n" +
-      "クリア状態にしました！"
+      `🧪 育成テスト完了！\n\n` +
+      `${monster.name}：Lv${level}\n` +
+      `HP：${data.hp}\n` +
+      `攻撃：${data.attack}\n` +
+      `防御：${data.defense}`
     );
 
     return;
   }
 
-  /* 湖を解放 */
-  if (choice === "5") {
+   /* 5：エンディング再生 */
+if (choice === "5") {
+  startTrialEnding(true);
+  return;
+}
 
-    adventureUnlocked = true;
-    forestProgress = 6;
+  alert("❌ 無効な番号です。");
+}
+/* 勇者の試練：スタッフロールのアニメーションを毎回先頭から開始 */
+function showTrialCreditsFromStart() {
+  const creditsScreen = document.getElementById("trial-credits-screen");
+  if (!creditsScreen) return;
 
-    saveGame();
+  // エンディングに属するCSSアニメーションを、前回の途中状態も含めて解除する。
+  // 位置・時間・モンスター設定には一切触れない。
+  const animatedParts = [
+    creditsScreen,
+    document.getElementById("trial-credits-scroll-world"),
+    document.getElementById("trial-credits-hero"),
+    document.getElementById("trial-credits-content"),
+    document.getElementById("trial-ending-the-end")
+  ].filter(Boolean);
 
-    alert(
-      "🌊 九九の湖を解放しました！"
-    );
+  // アニメーションを明示的に無効化してから画面を表示する。
+  animatedParts.forEach(part => {
+    part.style.animation = "none";
+  });
+  showScreen("trial-credits-screen");
 
-    return;
-  }
+  // 「表示中・アニメーションなし」の状態をブラウザに確定させる。
+  void creditsScreen.offsetWidth;
+  animatedParts.forEach(part => {
+    void getComputedStyle(part).animationName;
+  });
 
-  alert(
-    "❌ 無効な番号です。"
-  );
+  // CSSの元のアニメーションを戻すと、必ず先頭から新規開始する。
+  animatedParts.forEach(part => {
+    part.style.removeProperty("animation");
+  });
 }
 
 /* =========================================================
@@ -6501,4 +9181,331 @@ if (bgmToggle) {
     event.stopPropagation();
     setBgmEnabled(!bgmEnabled);
   });
+}
+/* ========================================
+   ククモン エンディング
+======================================== */
+
+const endingWait = ms =>
+    new Promise(resolve => setTimeout(resolve, ms));
+
+async function startEnding() {
+
+    // エンディング画面を表示
+    showScreen("ending-screen");
+
+    const message = el("ending-message");
+    const messageArea = el("ending-message-area");
+    const creditsArea = el("ending-credits-area");
+    const credits = el("ending-credits");
+    const theEnd = el("ending-the-end");
+
+    if (!message || !messageArea || !creditsArea ||
+        !credits || !theEnd) return;
+
+    // 再実行時の初期化
+    messageArea.style.display = "flex";
+    message.style.opacity = "0";
+    creditsArea.style.display = "none";
+    credits.style.animation = "none";
+    theEnd.style.display = "none";
+    theEnd.style.opacity = "0";
+
+    const messages = [
+        "勇者と仲間の活躍によって\n魔王ククデスは倒された\n世界に平和が戻ったのだ。",
+        "しかしーー\n勇者の冒険は、まだ終わらない。",
+        "これからも楽しく学び続けよう！"
+    ];
+
+    // 暗転後の静寂
+    await endingWait(800);
+
+    // 3つのメッセージを順番に表示
+    for (const text of messages) {
+
+        message.textContent = text;
+
+        await endingWait(200);
+
+        message.style.opacity = "1";
+
+        await endingWait(5000);
+
+        message.style.opacity = "0";
+
+        await endingWait(2500);
+    }
+
+    // スタッフロールへ
+    messageArea.style.display = "none";
+    await endingWait(1500);
+
+    creditsArea.style.display = "block";
+
+   // アニメーションを先頭から開始
+    credits.style.animation = "none";
+    void credits.offsetWidth;
+    credits.style.animation = "endingCreditsScroll 95s linear forwards";
+
+    // エンディング曲は毎回冒頭から再生
+    const endingAudio = el("op-bgm");
+    if (endingAudio) {
+        endingAudio.pause();
+        endingAudio.currentTime = 0;
+    }
+
+    // スタッフロール開始から少し待ってBGM再生
+    await endingWait(3500);
+
+    if (bgmEnabled) {
+    playBgm("ending");
+
+    const endingAudio = el("op-bgm");
+    if (endingAudio) {
+        endingAudio.loop = false;
+    }
+}
+
+   // スタッフロール終了後
+credits.addEventListener("animationend", () => {
+  creditsArea.style.display = "none";
+  theEnd.style.display = "flex";
+
+  requestAnimationFrame(() => {
+    theEnd.style.opacity = "1";
+  });
+
+  // THE ENDを5秒間表示
+setTimeout(() => {
+
+  // THE ENDを2秒かけてフェードアウト
+  theEnd.style.transition = "opacity 2s ease-in-out";
+  theEnd.style.opacity = "0";
+
+  // フェードアウト完了後
+  setTimeout(() => {
+
+    theEnd.style.display = "none";
+
+    // 真っ暗な状態を2秒間維持
+    setTimeout(() => {
+
+      // 勇者の試練を解放・保存
+      trialUnlocked = true;
+      saveGame();
+
+      // 解放メッセージを準備
+      messageArea.style.display = "flex";
+      messageArea.style.opacity = "1";
+
+      message.style.transition = "none";
+      message.style.opacity = "0";
+      message.textContent = "『勇者の試練』が解放されました！";
+
+      // 初期状態を描画してからフェードイン
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          message.style.transition = "opacity 1.5s ease-in-out";
+          message.style.opacity = "1";
+        });
+      });
+
+      // メッセージ表示後、冒険マップへ
+      setTimeout(() => {
+        messageArea.style.display = "none";
+        openWorld();
+      }, 5500);
+
+    }, 2000);
+
+  }, 2000);
+
+}, 5000);
+
+}, { once: true });
+}
+
+/* ========================================
+   勇者の試練 専用エンディング
+======================================== */
+
+async function startTrialEnding(skipVictory = false) {
+    if (!skipVictory) {
+    const victoryScreen = el("trial-victory-screen");
+    if (!victoryScreen) return;
+
+    victoryScreen.classList.remove("trial-fade-out");
+    showScreen("trial-victory-screen");
+
+    const victoryFanfare = document.getElementById("trial-victory-fanfare");
+    if (victoryFanfare) {
+      victoryFanfare.pause();
+      victoryFanfare.currentTime = 0;
+      victoryFanfare.volume = 0.4;
+      if (bgmEnabled) {
+        victoryFanfare.play().catch(err => {
+          console.warn("ファンファーレ再生失敗:", err);
+        });
+      }
+    }
+
+    await endingWait(9000);
+    victoryScreen.classList.add("trial-fade-out");
+    await endingWait(1000);
+
+    if (victoryFanfare) {
+      victoryFanfare.pause();
+      victoryFanfare.currentTime = 0;
+    }
+  }
+
+  // スタッフロールを先頭から開始
+  showTrialCreditsFromStart();
+
+  const trialEndingBgm = document.getElementById("trial-ending-bgm");
+  const creditsScreen = document.getElementById("trial-credits-screen");
+  const theEnd = document.getElementById("trial-ending-the-end");
+  const hero = document.getElementById("trial-credits-hero");
+  const creditsContent = document.getElementById("trial-credits-content");
+
+  let unlockScreenShown = false;
+  let heroWalkStarted = false;
+  let theEndStarted = false;
+  let whiteOverlay = null;
+  let heroWalkTimer = null;
+  let theEndFallbackTimer = null;
+
+  const showInfiniteCorridorUnlock = () => {
+    if (unlockScreenShown) return;
+    unlockScreenShown = true;
+    infiniteCorridorUnlocked = true;
+    saveGame();
+    showScreen("infinite-corridor-unlock-screen");
+    if (whiteOverlay) {
+      setTimeout(() => {
+        whiteOverlay.remove();
+        whiteOverlay = null;
+      }, 100);
+    }
+  };
+
+  const startWhiteFade = () => {
+    // THE ENDを十分に見せてから白くフェード
+    setTimeout(() => {
+      whiteOverlay = document.createElement("div");
+      whiteOverlay.id = "trial-ending-white-overlay";
+      Object.assign(whiteOverlay.style, {
+        position: "fixed",
+        inset: "0",
+        backgroundColor: "#fff",
+        opacity: "0",
+        transition: "opacity 2.5s ease-in-out",
+        zIndex: "999999",
+        pointerEvents: "none"
+      });
+      document.body.appendChild(whiteOverlay);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (whiteOverlay) whiteOverlay.style.opacity = "1";
+        });
+      });
+
+      // 白くなった画面を2秒見せてからバナーを出す
+      setTimeout(showInfiniteCorridorUnlock, 3000);
+    }, 1000);
+  };
+
+  const showTheEnd = () => {
+    if (theEndStarted || !theEnd) return;
+    theEndStarted = true;
+    if (theEndFallbackTimer) clearTimeout(theEndFallbackTimer);
+    theEnd.style.transition = "opacity 1.5s ease-in-out";
+    theEnd.style.opacity = "1";
+  };
+
+    const startHeroWalk = () => {
+    if (heroWalkStarted || !hero) return;
+
+    heroWalkStarted = true;
+
+    // CSSで設定済みの7秒間の歩行アニメーションを再開
+    hero.style.animationPlayState = "running";
+  };
+
+  if (trialEndingBgm) {
+    trialEndingBgm.pause();
+    trialEndingBgm.currentTime = 0;
+    trialEndingBgm.volume = 0.6;
+    trialEndingBgm.loop = false;
+    trialEndingBgm.onended = null;
+    trialEndingBgm.ontimeupdate = null;
+  }
+
+  if (creditsScreen) {
+    creditsScreen.classList.remove("trial-show-the-end", "trial-ending-fade-out");
+    creditsScreen.style.opacity = "1";
+    creditsScreen.style.transition = "";
+    creditsScreen.style.setProperty("animation", "none", "important");
+  }
+
+  if (theEnd) {
+    theEnd.style.opacity = "0";
+    theEnd.style.transition = "";
+    theEnd.style.setProperty("animation", "none", "important");
+  }
+
+   if (hero) {
+  hero.style.removeProperty("animation");
+  hero.style.animationPlayState = "paused";
+  hero.style.left = "50%";
+}
+
+  // CSSのスクロールは「2秒ディレイ + 83秒」。イベント名やブラウザ差で
+  // 足踏み時間が生じないよう、開始時点から85秒で歩行を開始する。
+  // animationendも併用し、実際のスクロール終了時に先に発火した方を採用。
+    const scrollWorld = document.getElementById("trial-credits-scroll-world");
+
+  if (scrollWorld) {
+    scrollWorld.addEventListener("animationend", function onLandscapeScrollEnd(event) {
+      if (event.animationName !== "trialLandscapeScroll") return;
+
+      scrollWorld.removeEventListener("animationend", onLandscapeScrollEnd);
+      startHeroWalk();
+    });
+  }
+ 
+  if (trialEndingBgm && bgmEnabled) {
+    // 最後の「ジャーン」の立ち上がりに合わせる。終端の3.5秒前を基準にする。
+    trialEndingBgm.ontimeupdate = () => {
+      const duration = trialEndingBgm.duration;
+      if (!Number.isFinite(duration) || duration <= 0) return;
+      if (duration - trialEndingBgm.currentTime <= 5.0) {
+        trialEndingBgm.ontimeupdate = null;
+        showTheEnd();
+      }
+    };
+    trialEndingBgm.onended = () => startWhiteFade();
+    // timeupdateが不安定な環境向けの保険（再生開始2秒後 + 約86.5秒）
+ } else {
+  // BGM OFF時は勇者が歩き始めて3.5秒後にTHE ENDを表示
+  setTimeout(() => {
+    showTheEnd();
+    setTimeout(startWhiteFade, 1500);
+  }, 88500);
+}
+
+  // スタッフロール開始から2秒後に専用BGMを再生
+  setTimeout(() => {
+    if (
+      creditsScreen &&
+      creditsScreen.classList.contains("active") &&
+      trialEndingBgm &&
+      bgmEnabled
+    ) {
+      trialEndingBgm.play().catch(err => {
+        console.warn("エンディングBGMを再生できませんでした:", err);
+        showTheEnd();
+      });
+    }
+  }, 2000);
 }
